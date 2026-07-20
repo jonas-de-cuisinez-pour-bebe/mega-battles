@@ -322,7 +322,12 @@ renderer.domElement.addEventListener('pointermove', (e) => {
   // focus uniquement sur la case sous la souris (jamais sur les personnages)
   if (hit.tile) setCursorCell(hit.tile.x, hit.tile.z);
   else setCursorCell(null);
-  const h = hit.unit && hit.unit !== queue.current ? hit.unit : null;
+  // inspection pilotée par la case : on inspecte l'unité qui OCCUPE la case
+  // survolée, pas celle dont le corps intercepte le pixel
+  const occupant = hit.tile
+    ? units.find(v => v.alive && v.x === hit.tile.x && v.z === hit.tile.z)
+    : null;
+  const h = occupant && occupant !== queue.current ? occupant : null;
   if (h !== hovered) {
     hovered = h;
     if (h) {
