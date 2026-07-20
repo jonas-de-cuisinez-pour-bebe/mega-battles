@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Mega Battles — planche contact</title>
+<style>
+  body { background: #16181d; color: #eee; font: 15px system-ui; margin: 24px; }
+  h1 { font-size: 22px; } h2 { font-size: 17px; margin: 28px 0 8px; text-transform: capitalize; }
+  .row { display: flex; gap: 16px; }
+  figure { margin: 0; text-align: center; }
+  img { width: 240px; height: 240px; object-fit: contain; border-radius: 10px;
+        background: repeating-conic-gradient(#2a2d34 0% 25%, #22252b 0% 50%) 0 0 / 24px 24px; }
+  figure.pick img { outline: 4px solid #58a34c; }
+  figcaption { padding: 6px; opacity: 0.8; }
+  figure.pick figcaption::after { content: " ✓ retenue"; color: #58a34c; font-weight: 700; }
+</style>
+</head>
+<body>
+<h1>Planche contact — vague 1 (personnages)</h1>
+<p>Choix retenus encadrés en vert. Pour en changer un, dis à Claude « prends la vX pour tel perso ».</p>
+<script>
+const PICKS = { humans_tanker: 1, humans_dps: 2, humans_archer: 2, zombies_tanker: 2, zombies_dps: 1, zombies_archer: 2 };
+for (const name of Object.keys(PICKS)) {
+  document.write(`<h2>${name.replace('_', ' · ')}</h2><div class="row">`);
+  for (const v of [1, 2, 3]) {
+    document.write(`<figure class="${PICKS[name] === v ? 'pick' : ''}">
+      <img src="/assets-raw/units/${name}_v${v}.png" loading="lazy">
+      <figcaption>v${v}</figcaption></figure>`);
+  }
+  document.write('</div>');
+}
+</script>
+</body>
+</html>

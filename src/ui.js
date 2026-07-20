@@ -175,12 +175,19 @@ export function initUI(handlers) {
       info.style.display = 'block';
       const t = TEAMS[unit.team];
       const c = unit.cls;
+      const flip = unit.team === 'zombies' ? 'transform:scaleX(-1);' : '';
       info.innerHTML = `
-        <h3 style="color:${t.css}">${t.label} · ${c.name}</h3>
-        <div>${unit.hp}/${unit.maxHp} HP</div>
-        <div class="hpbar"><div style="width:${(unit.hp / unit.maxHp) * 100}%"></div></div>
-        <div class="stats">STR ${c.str} · DEF ${c.def} · MOV ${c.mov} · Portée ${c.rangeMin}${c.rangeMax > c.rangeMin ? '-' + c.rangeMax : ''}</div>
-        <div class="skill">${c.skillName}${unit.cooldown > 0 ? ` (recharge : ${unit.cooldown} tour${unit.cooldown > 1 ? 's' : ''})` : ''} : ${c.skillDesc}</div>`;
+        <div style="display:flex;gap:14px;align-items:center">
+          <img src="/assets/units/${unit.team}_${c.key}.png" alt=""
+               style="width:84px;height:84px;object-fit:contain;flex:0 0 auto;${flip}">
+          <div style="min-width:0">
+            <h3 style="color:${t.css}">${t.label} · ${c.name}</h3>
+            <div>${unit.hp}/${unit.maxHp} HP</div>
+            <div class="hpbar"><div style="width:${(unit.hp / unit.maxHp) * 100}%"></div></div>
+            <div class="stats">STR ${c.str} · DEF ${c.def} · MOV ${c.mov} · Portée ${c.rangeMin}${c.rangeMax > c.rangeMin ? '-' + c.rangeMax : ''}</div>
+            <div class="skill">${c.skillName}${unit.cooldown > 0 ? ` (recharge : ${unit.cooldown} tour${unit.cooldown > 1 ? 's' : ''})` : ''} : ${c.skillDesc}</div>
+          </div>
+        </div>`;
     },
 
     renderQueue(units, active) {
@@ -231,6 +238,10 @@ export function initUI(handlers) {
         for (const t of Object.values(TEAMS)) {
           const c = choice(t.label, t.id === 'humans' ? 'les survivants' : 'la horde', () => finish('ai', t.id));
           c.style.borderColor = t.css;
+          const flip = t.id === 'zombies' ? 'transform:scaleX(-1);' : '';
+          c.insertAdjacentHTML('afterbegin',
+            `<img src="/assets/units/${t.id}_tanker.png" alt=""
+                  style="width:160px;height:160px;object-fit:contain;display:block;margin:0 auto 8px;${flip}">`);
           row.appendChild(c);
         }
         screen.appendChild(row);
@@ -255,18 +266,27 @@ export function initUI(handlers) {
       const screen = el('div', 'mb-screen');
       screen.innerHTML = `
         <div class="mb-vs">
-          <span class="camp" style="color:${TEAMS.humans.css}">HUMANS</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+            <img src="/assets/units/humans_dps.png" alt="" style="width:230px;height:230px;object-fit:contain">
+            <span class="camp" style="color:${TEAMS.humans.css}">HUMANS</span>
+          </div>
           <span class="vs">VS</span>
-          <span class="camp" style="color:${TEAMS.zombies.css}">ZOMBIES</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+            <img src="/assets/units/zombies_dps.png" alt="" style="width:230px;height:230px;object-fit:contain;transform:scaleX(-1)">
+            <span class="camp" style="color:${TEAMS.zombies.css}">ZOMBIES</span>
+          </div>
         </div>`;
       hud.appendChild(screen);
-      setTimeout(() => { screen.remove(); onDone(); }, 1800);
+      setTimeout(() => { screen.remove(); onDone(); }, 2200);
     },
 
     showVictory(teamId) {
       const t = TEAMS[teamId];
       const v = el('div', 'mb-victory');
-      v.innerHTML = `<h1 style="color:${t.css}">${t.label} l'emportent !</h1>`;
+      v.innerHTML = `
+        <img src="/assets/units/${teamId}_dps.png" alt=""
+             style="width:260px;height:260px;object-fit:contain${teamId === 'zombies' ? ';transform:scaleX(-1)' : ''}">
+        <h1 style="color:${t.css}">${t.label} l'emportent !</h1>`;
       const btn = document.createElement('button');
       btn.textContent = 'Rejouer';
       btn.onclick = () => location.reload();

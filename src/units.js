@@ -3,6 +3,22 @@ import { CLASSES, TEAMS } from './data.js';
 
 let nextId = 1;
 
+// Artwork gpt-image-1 servi depuis public/assets/units/
+const texLoader = new THREE.TextureLoader();
+const texCache = new Map();
+function unitTexture(team, cls) {
+  const key = `${team}_${cls}`;
+  if (!texCache.has(key)) {
+    const t = texLoader.load(`/assets/units/${key}.png`);
+    t.colorSpace = THREE.SRGBColorSpace;
+    texCache.set(key, t);
+  }
+  return texCache.get(key);
+}
+
+// Taille du billboard par classe (le Tanker impose)
+const SPRITE_SIZE = { tanker: 1.7, dps: 1.45, archer: 1.55 };
+
 export class Unit {
   constructor(teamId, clsKey, x, z) {
     this.id = nextId++;
@@ -23,44 +39,26 @@ export class Unit {
   #buildMesh() {
     const g = new THREE.Group();
     const color = TEAMS[this.team].color;
-    const mat = new THREE.MeshStandardMaterial({ color });
-    const dark = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(color).multiplyScalar(0.55),
-    });
 
-    if (this.cls.key === 'tanker') {
-      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.42, 0.75, 14), mat);
-      body.position.y = 0.48;
-      const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 10), dark);
-      helmet.position.y = 0.95;
-      const shield = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.55, 0.5), dark);
-      shield.position.set(0.4, 0.5, 0);
-      g.add(body, helmet, shield);
-    } else if (this.cls.key === 'dps') {
-      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.85, 12), mat);
-      body.position.y = 0.53;
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.17, 12, 10), dark);
-      head.position.y = 1.08;
-      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.45, 0.08), dark);
-      blade.position.set(0.28, 0.65, 0);
-      blade.rotation.z = -0.4;
-      g.add(body, head, blade);
-    } else { // archer
-      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 0.7, 12), mat);
-      body.position.y = 0.45;
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 10), dark);
-      head.position.y = 0.95;
-      const bow = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.035, 8, 16, Math.PI), dark);
-      bow.position.set(0.35, 0.55, 0);
-      bow.rotation.y = Math.PI / 2;
-      g.add(body, head, bow);
-    }
+    // Billboard du personnage (les zombies sont retournés pour faire face aux humains)
+    const size = SPRITE_SIZE[this.cls.key];
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: unitTexture(this.team, this.cls.key),
+    }));
+    const flip = this.team === 'zombies' ? -1 : 1;
+    sprite.scale.set(size * flip, size, 1);
+    sprite.position.y = size / 2 + 0.1;
+    sprite.userData.unit = this;
+    g.add(sprite);
 
-    if (this.team === 'zombies') g.rotation.x = 0.12; // posture voûtée
-
-    g.traverse(o => {
-      if (o.isMesh) { o.castShadow = true; o.userData.unit = this; }
-    });
+    // Socle aux couleurs de l'équipe (lisibilité du camp en un coup d'œil)
+    const disc = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.4, 0.44, 0.06, 24),
+      new THREE.MeshStandardMaterial({ color })
+    );
+    disc.position.y = 0.13;
+    disc.userData.unit = this;
+    g.add(disc);
 
     // Zone cliquable élargie (invisible mais interceptée par le raycast)
     const hitProxy = new THREE.Mesh(
@@ -82,7 +80,7 @@ export class Unit {
       map: this.hpTexture, depthTest: false,
     }));
     sprite.scale.set(0.85, 0.12, 1);
-    sprite.position.y = 1.45;
+    sprite.position.y = SPRITE_SIZE[this.cls.key] + 0.25;
     sprite.renderOrder = 10;
     sprite.userData.unit = this; // la barre de HP est cliquable aussi
     this.mesh.add(sprite);
