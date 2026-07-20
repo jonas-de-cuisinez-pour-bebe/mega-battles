@@ -251,9 +251,16 @@ function pick(event) {
   pointer.x = (event.clientX / innerWidth) * 2 - 1;
   pointer.y = -(event.clientY / innerHeight) * 2 + 1;
   raycaster.setFromCamera(pointer, camera);
-  const unitMeshes = units.filter(u => u.alive).flatMap(u => u.mesh.children);
-  const hitUnit = raycaster.intersectObjects(unitMeshes, false)[0];
-  if (hitUnit?.object.userData.unit) return { unit: hitUnit.object.userData.unit };
+  // Priorité aux ennemis : un clic qui traverse un ennemi le cible,
+  // même si un allié ou une case est plus proche de la caméra.
+  const cur = queue.current;
+  const meshesOf = (list) => list.flatMap(u => u.mesh.children);
+  const enemies = units.filter(u => u.alive && cur && u.team !== cur.team);
+  const allies = units.filter(u => u.alive && cur && u.team === cur.team);
+  const hitEnemy = raycaster.intersectObjects(meshesOf(enemies), false)[0];
+  if (hitEnemy?.object.userData.unit) return { unit: hitEnemy.object.userData.unit };
+  const hitAlly = raycaster.intersectObjects(meshesOf(allies), false)[0];
+  if (hitAlly?.object.userData.unit) return { unit: hitAlly.object.userData.unit };
   const hitTile = raycaster.intersectObjects(board.tileMeshes, false)[0];
   if (hitTile) return { tile: hitTile.object.userData };
   return {};
@@ -270,9 +277,18 @@ renderer.domElement.addEventListener('pointerdown', (e) => {
     return;
   }
   if (hit.unit) return;
-  if (hit.tile && game.mode === 'move' && !game.hasMoved) {
-    const k = board.key(hit.tile.x, hit.tile.z);
-    if (game.reach.cells.has(k)) doMove(k);
+  if (hit.tile) {
+    // Cliquer la case d'un ennemi à portée = l'attaquer
+    const occupant = units.find(v => v.alive && v.x === hit.tile.x && v.z === hit.tile.z);
+    if (occupant && occupant.team !== u.team && !game.hasActed &&
+        inAttackRange(u, occupant.x, occupant.z)) {
+      doAttack(occupant);
+      return;
+    }
+    if (game.mode === 'move' && !game.hasMoved) {
+      const k = board.key(hit.tile.x, hit.tile.z);
+      if (game.reach.cells.has(k)) doMove(k);
+    }
   }
 });
 
@@ -346,4 +362,4 @@ ui.showSetup(({ mode, playerTeam }) => {
 });
 
 // Poignée de debug pour les tests
-window.MB = { game, units, queue, board, doAttack, doMove, endTurn, computeDamage, toScreen, camera };
+window.MB = { game, units, queue, board, doAttack, doMove, endTurn, computeDamage, toScreen, camera, pick };

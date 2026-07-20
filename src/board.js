@@ -105,9 +105,13 @@ export class Board {
     this.scene.add(g);
   }
 
-  // Cases atteignables en déplacement (BFS 4 directions, unités = obstacles).
+  // Cases atteignables en déplacement (BFS 4 directions).
+  // Les ennemis bloquent le passage ; les alliés sont traversables
+  // mais on ne peut pas terminer son déplacement sur eux.
   reachable(unit, units) {
-    const occupied = new Set(units.filter(u => u.alive && u !== unit).map(u => this.key(u.x, u.z)));
+    const others = units.filter(u => u.alive && u !== unit);
+    const blocking = new Set(others.filter(u => u.team !== unit.team).map(u => this.key(u.x, u.z)));
+    const occupied = new Set(others.map(u => this.key(u.x, u.z)));
     const start = this.key(unit.x, unit.z);
     const dist = new Map([[start, 0]]);
     const parent = new Map();
@@ -120,14 +124,14 @@ export class Board {
         const nx = cx + dx, nz = cz + dz;
         const k = this.key(nx, nz);
         if (!this.inBounds(nx, nz) || dist.has(k)) continue;
-        if (this.terrainBlocked(nx, nz) || occupied.has(k)) continue;
+        if (this.terrainBlocked(nx, nz) || blocking.has(k)) continue;
         dist.set(k, d + 1);
         parent.set(k, this.key(cx, cz));
         frontier.push([nx, nz]);
       }
     }
     dist.delete(start);
-    const cells = new Set(dist.keys());
+    const cells = new Set([...dist.keys()].filter(k => !occupied.has(k)));
     const paths = new Map();
     for (const k of cells) {
       const path = [];

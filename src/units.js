@@ -61,6 +61,15 @@ export class Unit {
     g.traverse(o => {
       if (o.isMesh) { o.castShadow = true; o.userData.unit = this; }
     });
+
+    // Zone cliquable élargie (invisible mais interceptée par le raycast)
+    const hitProxy = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.55, 0.55, 1.7, 8),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
+    );
+    hitProxy.position.y = 0.85;
+    hitProxy.userData.unit = this;
+    g.add(hitProxy);
     return g;
   }
 
@@ -75,6 +84,7 @@ export class Unit {
     sprite.scale.set(0.85, 0.12, 1);
     sprite.position.y = 1.45;
     sprite.renderOrder = 10;
+    sprite.userData.unit = this; // la barre de HP est cliquable aussi
     this.mesh.add(sprite);
     this.#drawHpBar();
   }
