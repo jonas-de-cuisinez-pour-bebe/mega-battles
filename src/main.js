@@ -4,6 +4,7 @@ import { SPAWNS, AURA_REDUCTION } from './data.js';
 import { Board } from './board.js';
 import { Unit, Queue } from './units.js';
 import { initUI } from './ui.js';
+import { aiTakeTurn } from './ai.js';
 
 // ---------- Scène ----------
 const container = document.getElementById('app');
@@ -61,20 +62,25 @@ const game = {
   hasActed: false,
   busy: false,         // animation en cours
   over: false,
+  started: false,      // false tant que le setup n'est pas terminé
+  aiTeam: null,        // camp joué par l'IA (null en hotseat)
   reach: { cells: new Set(), paths: new Map() },
   targets: [],
 };
 
+const isAiTurn = () => game.aiTeam && queue.current.team === game.aiTeam;
+const inputLocked = () => game.busy || game.over || !game.started || isAiTurn();
+
 const ui = initUI({
-  onMode: (m) => { if (!game.busy && !game.over) { game.mode = m; refresh(); } },
+  onMode: (m) => { if (!inputLocked()) { game.mode = m; refresh(); } },
   onSkill: () => {
     const u = queue.current;
-    if (game.busy || game.over || u.cls.passive || u.skillUsed) return;
+    if (inputLocked() || u.cls.passive || u.skillUsed) return;
     u.armed = !u.armed;
     game.mode = 'attack';
     refresh();
   },
-  onEnd: () => { if (!game.busy && !game.over) endTurn(); },
+  onEnd: () => { if (!inputLocked()) endTurn(); },
 });
 
 function startTurn() {
@@ -85,6 +91,12 @@ function startTurn() {
   computeOptions();
   if (!game.reach.cells.size && game.targets.length) game.mode = 'attack';
   refresh();
+  if (isAiTurn()) {
+    aiTakeTurn({
+      game, units, queue, doAttack, doMove, endTurn, computeDamage,
+      wait: (ms) => tween(ms, () => {}),
+    });
+  }
 }
 
 function computeOptions() {
@@ -112,11 +124,12 @@ function refresh() {
     }
   }
   ring.position.copy(board.worldPos(u.x, u.z, 0.13));
-  ui.setBanner(u);
+  ui.setBanner(u, isAiTurn());
   ui.updateWheel(u, {
     mode: game.mode,
     canMove: !game.hasMoved && game.reach.cells.size > 0,
     canAttack: !game.hasActed,
+    locked: isAiTurn(),
   });
   ui.showInfo(u);
   ui.renderQueue(queue.ordered(), u);
@@ -247,7 +260,7 @@ function pick(event) {
 }
 
 renderer.domElement.addEventListener('pointerdown', (e) => {
-  if (game.busy || game.over || e.button !== 0) return;
+  if (inputLocked() || e.button !== 0) return;
   const hit = pick(e);
   const u = queue.current;
 
@@ -266,7 +279,7 @@ renderer.domElement.addEventListener('pointerdown', (e) => {
 // Inspection au survol : portée + stats de l'unité survolée (cases jaunes)
 let hovered = null;
 renderer.domElement.addEventListener('pointermove', (e) => {
-  if (game.busy || game.over) return;
+  if (game.busy || game.over || !game.started) return;
   const hit = pick(e);
   const h = hit.unit && hit.unit !== queue.current ? hit.unit : null;
   if (h !== hovered) {
@@ -323,6 +336,14 @@ renderer.setAnimationLoop(() => {
 // HMR : ce module gère tout l'état du jeu — un patch à chaud dupliquerait la scène.
 if (import.meta.hot) import.meta.hot.accept(() => location.reload());
 
-// Point d'entrée + poignée de debug pour les tests
-startTurn();
+// Point d'entrée : setup (accueil → armée → VS) puis premier tour
+ui.showSetup(({ mode, playerTeam }) => {
+  game.aiTeam = mode === 'ai' ? (playerTeam === 'humans' ? 'zombies' : 'humans') : null;
+  ui.showVs(() => {
+    game.started = true;
+    startTurn();
+  });
+});
+
+// Poignée de debug pour les tests
 window.MB = { game, units, queue, board, doAttack, doMove, endTurn, computeDamage, toScreen, camera };

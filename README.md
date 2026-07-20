@@ -14,7 +14,7 @@ npm run dev
 
 - [x] Phase 0 — scaffold Vite + Three.js
 - [x] Phase 1 — cœur jouable (plateau 12x10, 2x6 unités, file d'initiative, move/attack, skills, hotseat)
-- [ ] Phase 2 — IA basique + écrans de setup (armée, VS)
+- [x] Phase 2 — IA basique + écrans de setup (armée, VS)
 - [ ] Phase 3 — artwork billboards via API OpenAI (gpt-image-1)
 - [ ] Phase 4 — polish + équilibrage
 

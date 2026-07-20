@@ -88,6 +88,26 @@ const CSS = `
   padding: 8px 12px; font: 500 12px system-ui; pointer-events: none; z-index: 20;
 }
 
+/* Écrans de setup */
+.mb-screen {
+  position: fixed; inset: 0; background: rgba(10,11,14,0.92); display: flex;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 28px; pointer-events: auto; z-index: 40;
+}
+.mb-screen h1 { color: #fff; font: 800 52px system-ui; margin: 0; letter-spacing: 2px; }
+.mb-screen h2 { color: #fff; font: 600 26px system-ui; margin: 0; }
+.mb-screen .row { display: flex; gap: 24px; }
+.mb-choice {
+  padding: 20px 40px; font: 700 20px system-ui; color: #fff; background: #2c313b;
+  border: 3px solid rgba(255,255,255,0.2); border-radius: 14px; cursor: pointer;
+  min-width: 200px; text-align: center; transition: transform 0.1s;
+}
+.mb-choice:hover { transform: scale(1.05); border-color: #fff; }
+.mb-choice small { display: block; font: 500 13px system-ui; opacity: 0.7; margin-top: 6px; }
+.mb-vs { display: flex; align-items: center; gap: 36px; }
+.mb-vs .camp { font: 800 44px system-ui; }
+.mb-vs .vs { color: #fff; font: 800 30px system-ui; opacity: 0.7; }
+
 /* Victoire */
 .mb-victory {
   position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex;
@@ -133,17 +153,17 @@ export function initUI(handlers) {
   btnEnd.onclick = () => handlers.onEnd();
 
   return {
-    setBanner(unit) {
+    setBanner(unit, isAi) {
       const t = TEAMS[unit.team];
-      banner.innerHTML = `Tour de <b style="color:${t.css}">${t.label}</b> — ${unit.cls.name}`;
+      banner.innerHTML = `Tour de <b style="color:${t.css}">${t.label}</b> — ${unit.cls.name}${isAi ? ' (IA)' : ''}`;
     },
 
-    updateWheel(unit, { mode, canMove, canAttack }) {
+    updateWheel(unit, { mode, canMove, canAttack, locked }) {
       hub.textContent = unit.cls.abbr;
       hub.style.borderColor = TEAMS[unit.team].css;
-      toggle(btnMove, canMove, mode === 'move');
-      toggle(btnAttack, canAttack, mode === 'attack');
-      const skillUsable = !unit.cls.passive && !unit.skillUsed;
+      toggle(btnMove, canMove && !locked, mode === 'move');
+      toggle(btnAttack, canAttack && !locked, mode === 'attack');
+      const skillUsable = !locked && !unit.cls.passive && !unit.skillUsed;
       toggle(btnSkill, skillUsable, unit.armed);
       btnSkill.title = `${unit.cls.skillName} — ${unit.cls.skillDesc}`;
     },
@@ -186,6 +206,59 @@ export function initUI(handlers) {
       tip.style.display = 'block';
       tip.style.left = (x + 16) + 'px';
       tip.style.top = (y + 12) + 'px';
+    },
+
+    // Accueil → (choix d'armée si vs IA) → onDone({mode, playerTeam})
+    showSetup(onDone) {
+      const screen = el('div', 'mb-screen');
+      hud.appendChild(screen);
+
+      const home = () => {
+        screen.innerHTML = '<h1>MEGA BATTLES</h1><h2>Des duels simples et rapides</h2>';
+        const row = el('div', 'row');
+        row.append(
+          choice('Partie rapide', 'contre l’IA', () => pickArmy()),
+          choice('2 joueurs', 'sur le même écran', () => finish('hotseat', 'humans')),
+        );
+        screen.appendChild(row);
+      };
+
+      const pickArmy = () => {
+        screen.innerHTML = '<h2>Choisis ton armée</h2>';
+        const row = el('div', 'row');
+        for (const t of Object.values(TEAMS)) {
+          const c = choice(t.label, t.id === 'humans' ? 'les survivants' : 'la horde', () => finish('ai', t.id));
+          c.style.borderColor = t.css;
+          row.appendChild(c);
+        }
+        screen.appendChild(row);
+      };
+
+      const finish = (mode, playerTeam) => {
+        screen.remove();
+        onDone({ mode, playerTeam });
+      };
+
+      const choice = (label, sub, onClick) => {
+        const c = el('div', 'mb-choice');
+        c.innerHTML = `${label}<small>${sub}</small>`;
+        c.onclick = onClick;
+        return c;
+      };
+
+      home();
+    },
+
+    showVs(onDone) {
+      const screen = el('div', 'mb-screen');
+      screen.innerHTML = `
+        <div class="mb-vs">
+          <span class="camp" style="color:${TEAMS.humans.css}">HUMANS</span>
+          <span class="vs">VS</span>
+          <span class="camp" style="color:${TEAMS.zombies.css}">ZOMBIES</span>
+        </div>`;
+      hud.appendChild(screen);
+      setTimeout(() => { screen.remove(); onDone(); }, 1800);
     },
 
     showVictory(teamId) {
