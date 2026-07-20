@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { SPAWNS, AURA_REDUCTION } from './data.js';
+import { SPAWNS, AURA_REDUCTION, SKILL_COOLDOWN } from './data.js';
 import { Board } from './board.js';
 import { Unit, Queue } from './units.js';
 import { initUI } from './ui.js';
@@ -102,7 +102,7 @@ const ui = initUI({
   onMode: (m) => { if (!inputLocked()) { game.mode = m; refresh(); } },
   onSkill: () => {
     const u = queue.current;
-    if (inputLocked() || u.cls.passive || u.skillUsed) return;
+    if (inputLocked() || u.cls.passive || u.cooldown > 0) return;
     u.armed = !u.armed;
     game.mode = 'attack';
     refresh();
@@ -110,13 +110,21 @@ const ui = initUI({
   onEnd: () => { if (!inputLocked()) endTurn(); },
 });
 
-function startTurn() {
+async function startTurn() {
   const u = queue.current;
   game.hasMoved = false;
   game.hasActed = false;
   game.mode = 'move';
+  if (u.cooldown > 0) u.cooldown--;
   computeOptions();
   if (!game.reach.cells.size && game.targets.length) game.mode = 'attack';
+  // animation d'entrée : petit saut de l'unité qui prend son tour
+  game.busy = true;
+  refresh();
+  const baseY = 0.1;
+  await tween(380, k => { u.mesh.position.y = baseY + 0.35 * Math.sin(Math.PI * k); });
+  u.mesh.position.y = baseY;
+  game.busy = false;
   refresh();
   if (isAiTurn()) {
     aiTakeTurn({
@@ -195,7 +203,7 @@ async function doAttack(target) {
   board.clearHighlights();
 
   const dmg = computeDamage(u, target);
-  if (u.armed) { u.armed = false; u.skillUsed = true; }
+  if (u.armed) { u.armed = false; u.cooldown = SKILL_COOLDOWN; }
 
   // Animation : lunge en mêlée, projectile pour l'archer
   const origin = u.mesh.position.clone();

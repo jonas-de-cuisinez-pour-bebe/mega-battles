@@ -163,8 +163,10 @@ export function initUI(handlers) {
       hub.style.borderColor = TEAMS[unit.team].css;
       toggle(btnMove, canMove && !locked, mode === 'move');
       toggle(btnAttack, canAttack && !locked, mode === 'attack');
-      const skillUsable = !locked && !unit.cls.passive && !unit.skillUsed;
+      const skillUsable = !locked && !unit.cls.passive && unit.cooldown === 0;
       toggle(btnSkill, skillUsable, unit.armed);
+      btnSkill.querySelector('span').textContent =
+        unit.cooldown > 0 ? `SKILL (${unit.cooldown})` : 'SKILL';
       btnSkill.title = `${unit.cls.skillName} — ${unit.cls.skillDesc}`;
     },
 
@@ -178,7 +180,7 @@ export function initUI(handlers) {
         <div>${unit.hp}/${unit.maxHp} HP</div>
         <div class="hpbar"><div style="width:${(unit.hp / unit.maxHp) * 100}%"></div></div>
         <div class="stats">STR ${c.str} · DEF ${c.def} · MOV ${c.mov} · Portée ${c.rangeMin}${c.rangeMax > c.rangeMin ? '-' + c.rangeMax : ''}</div>
-        <div class="skill">${c.skillName}${unit.skillUsed ? ' (utilisé)' : ''} : ${c.skillDesc}</div>`;
+        <div class="skill">${c.skillName}${unit.cooldown > 0 ? ` (recharge : ${unit.cooldown} tour${unit.cooldown > 1 ? 's' : ''})` : ''} : ${c.skillDesc}</div>`;
     },
 
     renderQueue(units, active) {

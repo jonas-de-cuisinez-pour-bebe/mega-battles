@@ -2,7 +2,7 @@
 export const CLASSES = {
   tanker: {
     key: 'tanker', name: 'Tanker', abbr: 'TNK',
-    hp: 64, str: 8, def: 10, mov: 3, rangeMin: 1, rangeMax: 1,
+    hp: 64, str: 8, def: 8, mov: 3, rangeMin: 1, rangeMax: 1,
     skillName: 'Aura de garde', passive: true,
     skillDesc: 'Passif : les alliés adjacents subissent -3 dégâts.',
   },
@@ -10,13 +10,13 @@ export const CLASSES = {
     key: 'dps', name: 'DPS', abbr: 'DPS',
     hp: 44, str: 14, def: 4, mov: 5, rangeMin: 1, rangeMax: 1,
     skillName: 'Frappe double', passive: false,
-    skillDesc: 'Actif (1x/partie) : la prochaine attaque inflige STR x2.',
+    skillDesc: 'Actif (recharge 3 tours) : la prochaine attaque inflige STR x2.',
   },
   archer: {
     key: 'archer', name: 'Archer', abbr: 'ARC',
     hp: 36, str: 10, def: 2, mov: 4, rangeMin: 2, rangeMax: 4,
     skillName: 'Tir visé', passive: false,
-    skillDesc: 'Actif (1x/partie) : la prochaine attaque ignore DEF et les auras.',
+    skillDesc: 'Actif (recharge 3 tours) : la prochaine attaque ignore DEF et les auras.',
   },
 };
 
@@ -32,3 +32,4 @@ export const SPAWNS = {
 };
 
 export const AURA_REDUCTION = 3;
+export const SKILL_COOLDOWN = 3; // tours (de l'unité) avant de pouvoir relancer un skill actif

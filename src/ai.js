@@ -13,7 +13,7 @@ function pickTarget(unit, targets, computeDamage) {
 }
 
 function maybeArmSkill(unit, target, computeDamage) {
-  if (unit.cls.passive || unit.skillUsed) return;
+  if (unit.cls.passive || unit.cooldown > 0) return;
   const normal = computeDamage(unit, target);
   unit.armed = true;
   const armed = computeDamage(unit, target);

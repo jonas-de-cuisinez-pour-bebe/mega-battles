@@ -12,7 +12,7 @@ export class Unit {
     this.maxHp = this.cls.hp;
     this.x = x;
     this.z = z;
-    this.skillUsed = false;
+    this.cooldown = 0;  // tours restants avant que le skill actif soit rechargé
     this.armed = false; // skill actif enclenché pour la prochaine attaque
     this.mesh = this.#buildMesh();
     this.#buildHpBar();
