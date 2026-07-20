@@ -55,6 +55,33 @@ const ring = new THREE.Mesh(
 ring.rotation.x = -Math.PI / 2;
 scene.add(ring);
 
+// Curseur de survol : cadre blanc sur la case sous la souris
+const cursor = new THREE.Group();
+{
+  const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false });
+  const H = 0.05, L = 0.96;
+  for (const [dx, dz, w, d] of [
+    [0, -L / 2 + H / 2, L, H], [0, L / 2 - H / 2, L, H],
+    [-L / 2 + H / 2, 0, H, L], [L / 2 - H / 2, 0, H, L],
+  ]) {
+    const edge = new THREE.Mesh(new THREE.PlaneGeometry(w, d), mat);
+    edge.rotation.x = -Math.PI / 2;
+    edge.position.set(dx, 0, dz);
+    cursor.add(edge);
+  }
+  cursor.position.y = 0.125;
+  cursor.renderOrder = 5;
+  cursor.visible = false;
+  scene.add(cursor);
+}
+
+function setCursorCell(x, z) {
+  if (x === null) { cursor.visible = false; return; }
+  const p = board.worldPos(x, z, 0.125);
+  cursor.position.set(p.x, p.y, p.z);
+  cursor.visible = true;
+}
+
 // ---------- État du tour ----------
 const game = {
   mode: 'move',        // 'move' | 'attack'
@@ -297,6 +324,10 @@ let hovered = null;
 renderer.domElement.addEventListener('pointermove', (e) => {
   if (game.busy || game.over || !game.started) return;
   const hit = pick(e);
+  // focus sur la case survolée (celle de l'unité si on survole une unité)
+  if (hit.unit) setCursorCell(hit.unit.x, hit.unit.z);
+  else if (hit.tile) setCursorCell(hit.tile.x, hit.tile.z);
+  else setCursorCell(null);
   const h = hit.unit && hit.unit !== queue.current ? hit.unit : null;
   if (h !== hovered) {
     hovered = h;
@@ -345,6 +376,7 @@ renderer.setAnimationLoop(() => {
     if (k >= 1) { anims.splice(i, 1); a.res(); }
   }
   ring.rotation.z += 0.02;
+  if (game.busy || game.over || !game.started) cursor.visible = false;
   controls.update();
   renderer.render(scene, camera);
 });
