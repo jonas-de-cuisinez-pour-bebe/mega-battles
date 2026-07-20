@@ -330,13 +330,15 @@ renderer.domElement.addEventListener('pointermove', (e) => {
   const h = occupant && occupant !== queue.current ? occupant : null;
   if (h !== hovered) {
     hovered = h;
-    if (h) {
+    // en mode attaque, on garde l'affichage de SA portée (rouge) :
+    // pas de surbrillance jaune de l'unité survolée
+    if (h && game.mode !== 'attack') {
       board.clearHighlights();
       board.highlight([...board.reachable(h, units).cells], 'hover');
     } else {
-      ui.tooltip(null);
       refresh();
     }
+    if (!h) ui.tooltip(null);
   }
   if (h) {
     ui.tooltip(
