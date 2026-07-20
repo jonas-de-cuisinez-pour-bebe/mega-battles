@@ -5,6 +5,10 @@ import { Board } from './board.js';
 import { Unit, Queue } from './units.js';
 import { initUI } from './ui.js';
 import { aiTakeTurn } from './ai.js';
+import { sfx } from './audio.js';
+
+// politique autoplay : débloquer l'audio au premier geste réel
+addEventListener('pointerdown', () => sfx.unlock(), { once: true });
 
 // ---------- Scène ----------
 const container = document.getElementById('app');
@@ -121,6 +125,7 @@ async function startTurn() {
   // animation d'entrée : petit saut de l'unité qui prend son tour
   game.busy = true;
   refresh();
+  if (game.started) sfx.focus(u);
   const baseY = 0.1;
   await tween(380, k => { u.mesh.position.y = baseY + 0.35 * Math.sin(Math.PI * k); });
   u.mesh.position.y = baseY;
@@ -203,7 +208,9 @@ async function doAttack(target) {
   board.clearHighlights();
 
   const dmg = computeDamage(u, target);
+  const wasArmed = u.armed;
   if (u.armed) { u.armed = false; u.cooldown = SKILL_COOLDOWN; }
+  sfx.attack(u, wasArmed);
 
   // Animation : lunge en mêlée, projectile pour l'archer
   const origin = u.mesh.position.clone();
@@ -229,6 +236,7 @@ async function doAttack(target) {
   ui.floatDamage(s.x, s.y, `-${dmg}`);
 
   if (!target.alive) {
+    sfx.death(target);
     await tween(300, k => {
       target.mesh.scale.setScalar(1 - k);
       target.mesh.position.y = 0.1 - k * 0.3;
