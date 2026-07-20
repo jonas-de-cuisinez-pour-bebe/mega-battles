@@ -297,21 +297,16 @@ renderer.domElement.addEventListener('pointerdown', (e) => {
   if (inputLocked() || e.button !== 0) return;
   const hit = pick(e);
   const u = queue.current;
+  const attackable = (t) => t && t.alive && t.team !== u.team && !game.hasActed &&
+    inAttackRange(u, t.x, t.z);
 
-  if (hit.unit && hit.unit.team !== u.team && !game.hasActed &&
-      inAttackRange(u, hit.unit.x, hit.unit.z)) {
-    doAttack(hit.unit);
-    return;
-  }
-  if (hit.unit) return;
+  // 1. Attaque si le clic touche un ennemi réellement attaquable
+  if (attackable(hit.unit)) { doAttack(hit.unit); return; }
   if (hit.tile) {
-    // Cliquer la case d'un ennemi à portée = l'attaquer
+    // 2. Ou si le clic touche la case d'un ennemi attaquable
     const occupant = units.find(v => v.alive && v.x === hit.tile.x && v.z === hit.tile.z);
-    if (occupant && occupant.team !== u.team && !game.hasActed &&
-        inAttackRange(u, occupant.x, occupant.z)) {
-      doAttack(occupant);
-      return;
-    }
+    if (attackable(occupant)) { doAttack(occupant); return; }
+    // 3. Sinon le clic retombe sur la case (un ennemi hors de portée n'avale pas le clic)
     if (game.mode === 'move' && !game.hasMoved) {
       const k = board.key(hit.tile.x, hit.tile.z);
       if (game.reach.cells.has(k)) doMove(k);
