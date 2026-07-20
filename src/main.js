@@ -285,12 +285,12 @@ function pick(event) {
   const enemies = units.filter(u => u.alive && cur && u.team !== cur.team);
   const allies = units.filter(u => u.alive && cur && u.team === cur.team);
   const hitEnemy = raycaster.intersectObjects(meshesOf(enemies), false)[0];
-  if (hitEnemy?.object.userData.unit) return { unit: hitEnemy.object.userData.unit };
   const hitAlly = raycaster.intersectObjects(meshesOf(allies), false)[0];
-  if (hitAlly?.object.userData.unit) return { unit: hitAlly.object.userData.unit };
   const hitTile = raycaster.intersectObjects(board.tileMeshes, false)[0];
-  if (hitTile) return { tile: hitTile.object.userData };
-  return {};
+  return {
+    unit: hitEnemy?.object.userData.unit ?? hitAlly?.object.userData.unit ?? null,
+    tile: hitTile ? hitTile.object.userData : null,
+  };
 }
 
 renderer.domElement.addEventListener('pointerdown', (e) => {
@@ -324,9 +324,8 @@ let hovered = null;
 renderer.domElement.addEventListener('pointermove', (e) => {
   if (game.busy || game.over || !game.started) return;
   const hit = pick(e);
-  // focus sur la case survolée (celle de l'unité si on survole une unité)
-  if (hit.unit) setCursorCell(hit.unit.x, hit.unit.z);
-  else if (hit.tile) setCursorCell(hit.tile.x, hit.tile.z);
+  // focus uniquement sur la case sous la souris (jamais sur les personnages)
+  if (hit.tile) setCursorCell(hit.tile.x, hit.tile.z);
   else setCursorCell(null);
   const h = hit.unit && hit.unit !== queue.current ? hit.unit : null;
   if (h !== hovered) {
