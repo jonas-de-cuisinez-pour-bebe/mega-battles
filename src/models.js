@@ -128,6 +128,14 @@ function humansDps() {
   g.add(ball(0.32, skin, 0, 1.12, 0, 1, 0.95, 1));
   g.add(ball(0.335, hair, 0, 1.24, -0.04, 1, 0.6, 1));
   g.add(cyl(0.325, 0.325, 0.07, bandana, 0, 1.16, 0, 0, 0, true));
+  // petits yeux déterminés
+  const white = M(0xf2f2ec), pupil = M(0x26201e);
+  g.add(ball(0.045, white, -0.1, 1.1, 0.29));
+  g.add(ball(0.045, white, 0.1, 1.1, 0.29));
+  g.add(ball(0.02, pupil, -0.1, 1.1, 0.325));
+  g.add(ball(0.02, pupil, 0.1, 1.1, 0.325));
+  g.add(box(0.09, 0.02, 0.02, hair, -0.1, 1.16, 0.3, 0, 0, 0.15)); // sourcils froncés
+  g.add(box(0.09, 0.02, 0.02, hair, 0.1, 1.16, 0.3, 0, 0, -0.15));
   return g;
 }
 
@@ -166,6 +174,14 @@ function humansArcher() {
   g.add(ball(0.31, skin, 0, 1.1, 0, 1, 0.95, 1));
   g.add(ball(0.32, hair, 0, 1.23, -0.05, 1, 0.55, 1));
   g.add(cyl(0.315, 0.315, 0.08, red, 0, 1.17, 0, 0, 0, true));
+  // petits yeux mi-clos, l'air blasé
+  const white = M(0xf2f2ec), lid = M(0xc9985f);
+  g.add(ball(0.042, white, -0.09, 1.09, 0.28, 1, 0.7, 1));
+  g.add(ball(0.042, white, 0.09, 1.09, 0.28, 1, 0.7, 1));
+  g.add(ball(0.018, M(0x26201e), -0.09, 1.08, 0.315));
+  g.add(ball(0.018, M(0x26201e), 0.09, 1.08, 0.315));
+  g.add(box(0.09, 0.025, 0.02, lid, -0.09, 1.12, 0.3)); // paupières tombantes
+  g.add(box(0.09, 0.025, 0.02, lid, 0.09, 1.12, 0.3));
   g.add(box(0.1, 0.1, 0.06, red, 0, 1.17, -0.3)); // nœud du bandeau
   g.add(cyl(0.015, 0.015, 0.14, M(0xf2f0e8), 0.08, 0.99, 0.31, 1.2, 0.4));
   g.add(ball(0.02, M(0xe0662e, { emissive: 0xe0662e, emissiveIntensity: 0.8 }), 0.12, 0.96, 0.35));

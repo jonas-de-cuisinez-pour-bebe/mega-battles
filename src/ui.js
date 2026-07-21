@@ -35,12 +35,19 @@ const CSS = `
   position: absolute; bottom: 0; left: 0; right: 0; height: 36%;
   background: radial-gradient(circle at 50% -30%, #e0604f, #a32c22 75%);
   border-top: 2px solid rgba(0,0,0,0.5);
-  color: #fff; font: 800 17px system-ui;
+  color: #fff; font: 800 12px system-ui; letter-spacing: -1px;
   display: flex; align-items: center; justify-content: center;
+  padding-bottom: 6px;
   cursor: pointer; pointer-events: auto;
   box-shadow: inset 0 -4px 8px rgba(0,0,0,0.4), inset 0 2px 3px rgba(255,255,255,0.22);
 }
 .mb-btn-end:hover { filter: brightness(1.18); }
+.mb-end-label {
+  position: absolute; left: 50%; top: 134px; transform: translateX(-50%);
+  font: 800 10px system-ui; color: #fff; letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px #000, 0 0 6px rgba(0,0,0,0.7); white-space: nowrap;
+  pointer-events: none;
+}
 .mb-btn {
   position: absolute; width: 66px; height: 66px;
   background: center / contain no-repeat;
@@ -218,8 +225,9 @@ export function initUI(handlers) {
     <div class="mb-btn mb-btn-move"><span>DÉPLACER</span></div>
     <div class="hubc">
       <span class="mb-cls"></span>
-      <div class="mb-btn-end" title="Fin de tour">✕</div>
-    </div>`;
+      <div class="mb-btn-end" title="Fin de tour">▶▶</div>
+    </div>
+    <span class="mb-end-label">FIN DE TOUR</span>`;
   const info = el('div', 'mb-info');
   const queue = el('div', 'mb-queue');
   const tip = el('div', 'mb-tip');
