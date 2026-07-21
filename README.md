@@ -15,7 +15,8 @@ npm run dev
 - [x] Phase 0 — scaffold Vite + Three.js
 - [x] Phase 1 — cœur jouable (plateau 12x10, 2x6 unités, file d'initiative, move/attack, skills, hotseat)
 - [x] Phase 2 — IA basique + écrans de setup (armée, VS)
-- [x] Phase 3 — artwork billboards via API OpenAI (gpt-image-1) — vague 1 : 6 personnages
+- [x] Phase 3 — artwork gpt-image-1 pour l'UI (portraits, setup, VS, victoire) + personnages
+  en modèles 3D procéduraux chibi sur le plateau (src/models.js)
   (18 variantes générées pour 3,01 $, planche contact : /planche.html ; script : assets-raw/gen_assets.py)
 - [ ] Phase 4 — polish + équilibrage
 
