@@ -106,6 +106,33 @@ const CSS = `
 }
 .mb-choice:hover { transform: scale(1.05); border-color: #fff; }
 .mb-choice small { display: block; font: 500 13px system-ui; opacity: 0.7; margin-top: 6px; }
+.mb-screen.mb-home {
+  background:
+    linear-gradient(rgba(8,9,12,0.2), rgba(8,9,12,0.45) 65%, rgba(8,9,12,0.8)),
+    url('/assets/ui/keyart.png') center / cover no-repeat, #0a0b0e;
+  gap: 14px;
+}
+.mb-logo { width: min(80vw, 580px); filter: drop-shadow(0 8px 20px rgba(0,0,0,0.85)); }
+.mb-tagline {
+  color: #fff; font: 600 italic 20px system-ui; margin: 0;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.95); letter-spacing: 0.5px;
+}
+.mb-btn-col { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 12px; }
+.mb-btn-img {
+  width: 350px; height: 106px; display: flex; align-items: center; justify-content: center;
+  background: center / contain no-repeat;
+  color: #fff; font: 800 23px system-ui; letter-spacing: 1.5px; text-align: center;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.75), 0 0 12px rgba(0,0,0,0.5);
+  cursor: pointer; transition: transform 0.12s;
+}
+.mb-btn-img:hover { transform: scale(1.07); }
+.mb-btn-img small {
+  display: block; font: 700 13px system-ui; letter-spacing: 0.5px;
+  opacity: 0.92; margin-top: 1px; text-transform: none;
+}
+.mb-btn-orange { background-image: url('/assets/ui/btn_orange.png'); }
+.mb-btn-green { background-image: url('/assets/ui/btn_green.png'); }
+
 .mb-vs { display: flex; align-items: center; gap: 36px; }
 .mb-vs .camp { font: 800 44px system-ui; }
 .mb-vs .vs { color: #fff; font: 800 30px system-ui; opacity: 0.7; }
@@ -227,13 +254,23 @@ export function initUI(handlers) {
       hud.appendChild(screen);
 
       const home = () => {
-        screen.innerHTML = '<h1>MEGA BATTLES</h1><h2>Des duels simples et rapides</h2>';
-        const row = el('div', 'row');
-        row.append(
-          choice('Partie rapide', 'contre l’IA', () => pickArmy()),
-          choice('2 joueurs', 'sur le même écran', () => finish('hotseat', 'humans')),
+        screen.classList.add('mb-home');
+        screen.innerHTML = `
+          <img class="mb-logo" src="/assets/ui/logo.png" alt="MEGA BATTLES">
+          <h2 class="mb-tagline">Des duels simples et rapides</h2>`;
+        const col = el('div', 'mb-btn-col');
+        col.append(
+          imgBtn('PARTIE RAPIDE', 'contre l’IA', 'orange', () => pickArmy()),
+          imgBtn('2 JOUEURS', 'sur le même écran', 'green', () => finish('hotseat', 'humans')),
         );
-        screen.appendChild(row);
+        screen.appendChild(col);
+      };
+
+      const imgBtn = (label, sub, color, onClick) => {
+        const b = el('div', `mb-btn-img mb-btn-${color}`);
+        b.innerHTML = `<div>${label}<small>${sub}</small></div>`;
+        b.onclick = onClick;
+        return b;
       };
 
       const pickArmy = () => {

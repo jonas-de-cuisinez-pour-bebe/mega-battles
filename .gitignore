@@ -4,3 +4,4 @@ dist/
 *.local
 assets-raw/units/
 assets-raw/cost_log.json
+assets-raw/home/
