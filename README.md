@@ -21,3 +21,9 @@ npm run dev
 - [x] Phase 4 — polish (idle, impacts/particules, survol de la file) + équilibrage rapide (HP -25 %)
 
 Design source : doc « Mega Battles » + mock-ups juillet 2013 (Design/).
+
+## Jouer en ligne
+
+https://mega-battles.cellar-c2.services.clever-cloud.com/
+
+Redéploiement : `./deploy.sh` (build + sync vers le bucket Cellar).
