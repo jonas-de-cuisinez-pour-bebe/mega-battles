@@ -2,11 +2,12 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Mega Battles</title>
     <style>
       html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1d24; }
       #app { width: 100%; height: 100%; }
+      #app canvas { touch-action: none; } /* laisse OrbitControls/tap gérer le tactile */
       #hud { position: fixed; inset: 0; pointer-events: none; font-family: system-ui, sans-serif; }
     </style>
   </head>

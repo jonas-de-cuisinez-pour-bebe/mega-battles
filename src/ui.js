@@ -229,6 +229,46 @@ const CSS = `
 }
 .mb-victory h1 { color: #fff; font: 800 48px system-ui; margin: 0; }
 .mb-victory .mb-btn-img { width: 280px; height: 92px; font-size: 19px; }
+
+/* ============ Mobile / écrans étroits ============ */
+@media (max-width: 760px) {
+  /* Panneau d'infos : docké en haut, pleine largeur, compact (ne déborde plus) */
+  .mb-info {
+    left: 6px; right: 6px; top: 58px; bottom: auto; min-width: 0;
+    padding: 8px 12px;
+  }
+  .mb-info h3 { font-size: 14px; }
+  .mb-info img { width: 60px !important; height: 60px !important; }
+  .mb-info .skill { font-size: 11px; }
+
+  /* Bannière plus compacte en haut */
+  .mb-banner { top: 8px; padding: 6px 16px; font-size: 13px; }
+
+  /* Molette un peu réduite, calée en bas à gauche au-dessus de la file */
+  .mb-wheel { transform: scale(0.82); transform-origin: bottom left; left: 12px; bottom: 76px; }
+
+  /* File d'initiative : défilable horizontalement, jetons plus petits */
+  .mb-queue { height: 52px; justify-content: flex-start; overflow-x: auto; padding: 0 6px; gap: 7px; }
+  .mb-chip { width: 34px; height: 34px; font-size: 10px; }
+  .mb-chip.active { width: 38px; height: 38px; }
+
+  /* Choix d'armée : cartes empilées, taille adaptée */
+  .mb-screen .row { flex-direction: column; gap: 12px; }
+  .mb-choice { min-width: 0; width: 78vw; max-width: 340px; padding: 12px 20px; }
+  .mb-choice img { width: 96px !important; height: 96px !important; margin-bottom: 4px !important; }
+
+  /* Boutons pleine largeur écran, logo/textes ajustés */
+  .mb-btn-img { width: min(88vw, 360px); }
+  .mb-logo { width: 82vw; }
+  .mb-tagline { font-size: 16px; text-align: center; padding: 0 12px; }
+  .mb-invite-link { width: min(78vw, 300px); }
+
+  /* Écran VS / crédits : ne débordent pas */
+  .mb-vs { gap: 12px; }
+  .mb-vs img { width: 34vw !important; height: 34vw !important; }
+  .mb-vs .camp { font-size: 8vw; }
+  .mb-victory h1 { font-size: 34px; text-align: center; padding: 0 16px; }
+}
 `;
 
 export function initUI(handlers) {
