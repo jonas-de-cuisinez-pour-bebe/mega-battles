@@ -31,7 +31,10 @@ export class Unit {
     // Modèle 3D procédural, style figurine chibi (voir models.js)
     const model = buildModel(this.team, this.cls.key);
     model.position.y = 0.1;
+    // orientation initiale : vers le camp adverse (+x pour les humains)
+    model.rotation.y = this.team === 'humans' ? Math.PI / 2 : -Math.PI / 2;
     model.traverse(o => { if (o.isMesh) o.userData.unit = this; });
+    this.model = model;
     g.add(model);
 
     // Socle aux couleurs de l'équipe (lisibilité du camp en un coup d'œil)

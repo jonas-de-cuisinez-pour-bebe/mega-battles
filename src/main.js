@@ -127,6 +127,8 @@ async function startTurn() {
   refresh();
   if (game.started) sfx.focus(u);
   const baseY = 0.1;
+  const foe = nearestEnemy(u);
+  if (foe) faceTween(u, foe.x, foe.z, 220); // se tourne vers l'ennemi le plus proche
   await tween(380, k => { u.mesh.position.y = baseY + 0.35 * Math.sin(Math.PI * k); });
   u.mesh.position.y = baseY;
   game.busy = false;
@@ -151,6 +153,27 @@ function computeOptions() {
 function inAttackRange(u, x, z) {
   const d = Math.abs(u.x - x) + Math.abs(u.z - z);
   return d >= u.cls.rangeMin && d <= u.cls.rangeMax;
+}
+
+function nearestEnemy(u) {
+  let best = null, bd = Infinity;
+  for (const t of units) {
+    if (!t.alive || t.team === u.team) continue;
+    const d = Math.abs(t.x - u.x) + Math.abs(t.z - u.z);
+    if (d < bd) { bd = d; best = t; }
+  }
+  return best;
+}
+
+// Tourne le modèle d'une unité vers une case (arc le plus court)
+function faceTween(u, tx, tz, dur = 150) {
+  const target = Math.atan2(tx - u.x, tz - u.z);
+  const from = u.model.rotation.y;
+  let delta = (target - from) % (Math.PI * 2);
+  if (delta > Math.PI) delta -= Math.PI * 2;
+  if (delta < -Math.PI) delta += Math.PI * 2;
+  if (Math.abs(delta) < 0.01) return Promise.resolve();
+  return tween(dur, k => { u.model.rotation.y = from + delta * k; });
 }
 
 function refresh() {
@@ -192,9 +215,12 @@ async function doMove(destKey) {
   for (const step of path) {
     const from = u.mesh.position.clone();
     const to = board.worldPos(step.x, step.z, 0.1);
+    faceTween(u, step.x, step.z, 80); // regarde dans le sens de la marche
     await tween(110, k => u.mesh.position.lerpVectors(from, to, k));
     u.x = step.x; u.z = step.z;
   }
+  const foe = nearestEnemy(u);
+  if (foe) faceTween(u, foe.x, foe.z, 180); // puis fait face à l'ennemi le plus proche
   game.hasMoved = true;
   game.busy = false;
   computeOptions();
@@ -211,6 +237,10 @@ async function doAttack(target) {
   const wasArmed = u.armed;
   if (u.armed) { u.armed = false; u.cooldown = SKILL_COOLDOWN; }
   sfx.attack(u, wasArmed);
+
+  // L'attaquant fait face à sa cible, la cible se retourne vers lui
+  await faceTween(u, target.x, target.z, 120);
+  faceTween(target, u.x, u.z, 160);
 
   // Animation : lunge en mêlée, projectile pour l'archer
   const origin = u.mesh.position.clone();

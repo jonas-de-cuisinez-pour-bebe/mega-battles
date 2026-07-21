@@ -303,8 +303,7 @@ const BUILDERS = {
 
 export function buildModel(team, cls) {
   const g = BUILDERS[`${team}_${cls}`]();
-  // chaque camp regarde vers l'adversaire
-  g.rotation.y = team === 'humans' ? -Math.PI / 2 : Math.PI / 2;
+  // le modèle est construit face à +z ; l'orientation est gérée par le jeu
   g.traverse(o => { if (o.isMesh) o.castShadow = true; });
   return g;
 }
