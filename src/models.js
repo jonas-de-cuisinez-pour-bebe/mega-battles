@@ -292,16 +292,17 @@ function zombiesArcher() {
   }
   g.add(box(0.26, 0.05, 0.12, bone, 0, 0.74, 0)); // clavicules/épaules
 
-  // ailes déplumées en éventail
+  // grandes ailes déplumées en éventail (le croquis les fait plus grandes que le corps)
   for (const side of [-1, 1]) {
     const w = new THREE.Group();
-    for (let i = 0; i < 4; i++) {
-      const f = cone(0.05, 0.5 - i * 0.07, wing, 0, 0.22 - i * 0.03, 0, 0, side * (0.5 + i * 0.4));
+    for (let i = 0; i < 5; i++) {
+      const f = cone(0.06, 0.62 - i * 0.07, wing, 0, 0.26 - i * 0.035, 0, 0, side * (0.45 + i * 0.38));
       f.scale.z = 0.35;
       w.add(f);
     }
-    w.position.set(side * 0.16, 0.78, -0.14);
+    w.position.set(side * 0.18, 0.82, -0.16);
     w.rotation.z = side * 0.5;
+    w.scale.setScalar(1.45);
     g.add(w);
   }
 
