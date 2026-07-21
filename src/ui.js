@@ -134,6 +134,24 @@ const CSS = `
 .mb-btn-orange { background-image: url('/assets/ui/btn_orange.png'); }
 .mb-btn-green { background-image: url('/assets/ui/btn_green.png'); }
 
+/* Attente d'adversaire */
+.mb-spinner {
+  width: 46px; height: 46px; border-radius: 50%;
+  border: 5px solid rgba(255,255,255,0.25); border-top-color: #fff;
+  animation: mb-spin 0.9s linear infinite;
+}
+@keyframes mb-spin { to { transform: rotate(360deg); } }
+.mb-invite { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.mb-invite-row { display: flex; gap: 8px; }
+.mb-invite-link {
+  width: 300px; padding: 10px 12px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.3);
+  background: rgba(0,0,0,0.55); color: #fff; font: 600 13px monospace;
+}
+.mb-copy {
+  padding: 10px 18px; border-radius: 8px; border: none; background: #58a34c;
+  color: #fff; font: 700 14px system-ui; cursor: pointer;
+}
+
 .mb-vs { display: flex; align-items: center; gap: 36px; }
 .mb-vs .camp { font: 800 44px system-ui; }
 .mb-vs .vs { color: #fff; font: 800 30px system-ui; opacity: 0.7; }
@@ -183,9 +201,15 @@ export function initUI(handlers) {
   btnEnd.onclick = () => handlers.onEnd();
 
   return {
-    setBanner(unit, isAi) {
+    setBanner(unit, isAi, online) {
       const t = TEAMS[unit.team];
-      banner.innerHTML = `Tour de <b style="color:${t.css}">${t.label}</b> — ${unit.cls.name}${isAi ? ' (IA)' : ''}`;
+      if (online) {
+        banner.innerHTML = online === 'me'
+          ? `<b style="color:${t.css}">À toi</b> — ${unit.cls.name}`
+          : `<b style="color:${t.css}">Adversaire</b> — ${unit.cls.name}`;
+      } else {
+        banner.innerHTML = `Tour de <b style="color:${t.css}">${t.label}</b> — ${unit.cls.name}${isAi ? ' (IA)' : ''}`;
+      }
     },
 
     updateWheel(unit, { mode, canMove, canAttack, locked }) {
@@ -249,8 +273,8 @@ export function initUI(handlers) {
       tip.style.top = (y + 12) + 'px';
     },
 
-    // Accueil → (choix d'armée si vs IA) → onDone({mode, playerTeam})
-    showSetup(onDone) {
+    // Accueil → « Partie rapide » (choix d'armée puis onAi) ou « Jouer en ligne » (onOnline)
+    showSetup({ onAi, onOnline }) {
       const screen = el('div', 'mb-screen');
       hud.appendChild(screen);
 
@@ -261,8 +285,8 @@ export function initUI(handlers) {
           <h2 class="mb-tagline">Des duels simples et rapides</h2>`;
         const col = el('div', 'mb-btn-col');
         col.append(
+          imgBtn('JOUER EN LIGNE', 'duel en direct', 'green', () => { screen.remove(); onOnline(); }),
           imgBtn('PARTIE RAPIDE', 'contre l’IA', 'orange', () => pickArmy()),
-          imgBtn('2 JOUEURS', 'sur le même écran', 'green', () => finish('hotseat', 'humans')),
         );
         screen.appendChild(col);
       };
@@ -278,7 +302,9 @@ export function initUI(handlers) {
         screen.innerHTML = '<h2>Choisis ton armée</h2>';
         const row = el('div', 'row');
         for (const t of Object.values(TEAMS)) {
-          const c = choice(t.label, t.id === 'humans' ? 'les survivants' : 'la horde', () => finish('ai', t.id));
+          const c = el('div', 'mb-choice');
+          c.innerHTML = `${t.label}<small>${t.id === 'humans' ? 'les survivants' : 'la horde'}</small>`;
+          c.onclick = () => { screen.remove(); onAi(t.id); };
           c.style.borderColor = t.css;
           const flip = t.id === 'zombies' ? 'transform:scaleX(-1);' : '';
           c.insertAdjacentHTML('afterbegin',
@@ -289,24 +315,55 @@ export function initUI(handlers) {
         screen.appendChild(row);
       };
 
-      const finish = (mode, playerTeam) => {
-        screen.remove();
-        onDone({ mode, playerTeam });
-      };
-
-      const choice = (label, sub, onClick) => {
-        const c = el('div', 'mb-choice');
-        c.innerHTML = `${label}<small>${sub}</small>`;
-        c.onclick = onClick;
-        return c;
-      };
-
       home();
     },
 
-    showVs(onDone) {
+    // Écran d'attente d'adversaire, avec lien d'invitation
+    showWaiting() {
+      const screen = el('div', 'mb-screen mb-home');
+      screen.innerHTML = `
+        <img class="mb-logo" src="/assets/ui/logo.png" alt="MEGA BATTLES">
+        <h2 class="mb-tagline">En attente d'un adversaire…</h2>
+        <div class="mb-spinner"></div>
+        <div class="mb-invite" style="display:none">
+          <div style="color:#fff;font:600 14px system-ui;opacity:0.9">Invite un ami avec ce lien — la partie démarre dès qu'il l'ouvre :</div>
+          <div class="mb-invite-row">
+            <input readonly class="mb-invite-link">
+            <button class="mb-copy">Copier</button>
+          </div>
+        </div>`;
+      hud.appendChild(screen);
+      const linkInput = screen.querySelector('.mb-invite-link');
+      const copyBtn = screen.querySelector('.mb-copy');
+      copyBtn.onclick = () => {
+        linkInput.select();
+        navigator.clipboard?.writeText(linkInput.value);
+        copyBtn.textContent = 'Copié !';
+        setTimeout(() => { copyBtn.textContent = 'Copier'; }, 1500);
+      };
+      return {
+        setLink(url) {
+          screen.querySelector('.mb-invite').style.display = 'flex';
+          linkInput.value = url;
+        },
+        close() { screen.remove(); },
+      };
+    },
+
+    showOpponentLeft(msg) {
+      const v = el('div', 'mb-victory');
+      v.innerHTML = `<h1 style="color:#fff;font-size:34px">${msg || 'L’adversaire a fui le champ de bataille !'}</h1>`;
+      const btn = document.createElement('button');
+      btn.textContent = 'Retour à l’accueil';
+      btn.onclick = () => { location.href = location.pathname; };
+      v.appendChild(btn);
+      hud.appendChild(v);
+    },
+
+    showVs(onDone, myTeam) {
       const screen = el('div', 'mb-screen');
       screen.innerHTML = `
+        ${myTeam ? `<h2>Tu joues <b style="color:${TEAMS[myTeam].css}">${TEAMS[myTeam].label}</b></h2>` : ''}
         <div class="mb-vs">
           <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
             <img src="/assets/units/humans_dps.png" alt="" style="width:230px;height:230px;object-fit:contain">

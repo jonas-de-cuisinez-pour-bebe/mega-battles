@@ -5,6 +5,7 @@ import { Board } from './board.js';
 import { Unit, Queue } from './units.js';
 import { initUI } from './ui.js';
 import { aiTakeTurn } from './ai.js';
+import { connect } from './net.js';
 import { sfx } from './audio.js';
 
 // politique autoplay : débloquer l'audio au premier geste réel
@@ -94,24 +95,80 @@ const game = {
   busy: false,         // animation en cours
   over: false,
   started: false,      // false tant que le setup n'est pas terminé
-  aiTeam: null,        // camp joué par l'IA (null en hotseat)
+  aiTeam: null,        // camp joué par l'IA (mode Partie rapide)
+  online: null,        // { send, myTeam } en duel WebSocket
   reach: { cells: new Set(), paths: new Map() },
   targets: [],
 };
 
 const isAiTurn = () => game.aiTeam && queue.current.team === game.aiTeam;
-const inputLocked = () => game.busy || game.over || !game.started || isAiTurn();
+const isRemoteTurn = () => game.online && queue.current.team !== game.online.myTeam;
+const inputLocked = () => game.busy || game.over || !game.started || isAiTurn() || isRemoteTurn();
+
+// ---------- Bus d'actions ----------
+// Toutes les entrées joueur passent par dispatch : en ligne, l'action part au
+// serveur et n'est exécutée qu'à la réception de son écho (ordre garanti,
+// identique chez les deux joueurs — le jeu est déterministe).
+const pending = [];
+let pumping = false;
+
+function dispatch(action) {
+  if (game.online) game.online.send(action);
+  else enqueue(action);
+}
+
+function enqueue(action) {
+  pending.push(action);
+  pump();
+}
+
+async function pump() {
+  if (pumping) return;
+  pumping = true;
+  while (pending.length) {
+    while (game.busy) await new Promise(r => setTimeout(r, 60));
+    if (game.over) { pending.length = 0; break; }
+    await runAction(pending.shift());
+  }
+  pumping = false;
+}
+
+async function runAction(a) {
+  const u = queue.current;
+  switch (a.kind) {
+    case 'move': {
+      const k = board.key(a.x, a.z);
+      if (!game.hasMoved && game.reach.cells.has(k)) await doMove(k);
+      break;
+    }
+    case 'attack': {
+      const t = units.find(v => v.id === a.target);
+      if (t && t.alive && t.team !== u.team && !game.hasActed && inAttackRange(u, t.x, t.z)) {
+        await doAttack(t);
+      }
+      break;
+    }
+    case 'skill':
+      if (!u.cls.passive && u.cooldown === 0) {
+        u.armed = a.armed;
+        game.mode = 'attack';
+        refresh();
+      }
+      break;
+    case 'end':
+      endTurn();
+      break;
+  }
+}
 
 const ui = initUI({
   onMode: (m) => { if (!inputLocked()) { game.mode = m; refresh(); } },
   onSkill: () => {
     const u = queue.current;
     if (inputLocked() || u.cls.passive || u.cooldown > 0) return;
-    u.armed = !u.armed;
-    game.mode = 'attack';
-    refresh();
+    dispatch({ kind: 'skill', armed: !u.armed });
   },
-  onEnd: () => { if (!inputLocked()) endTurn(); },
+  onEnd: () => { if (!inputLocked()) dispatch({ kind: 'end' }); },
   // Survol d'un jeton de la file : repère le personnage sur le plateau
   onChipHover: (u, e) => {
     if (game.over || !game.started) return;
@@ -261,12 +318,12 @@ function refresh() {
     }
   }
   ring.position.copy(board.worldPos(u.x, u.z, 0.13));
-  ui.setBanner(u, isAiTurn());
+  ui.setBanner(u, isAiTurn(), game.online ? (isRemoteTurn() ? 'them' : 'me') : null);
   ui.updateWheel(u, {
     mode: game.mode,
     canMove: !game.hasMoved && game.reach.cells.size > 0,
     canAttack: !game.hasActed,
-    locked: isAiTurn(),
+    locked: isAiTurn() || isRemoteTurn(),
   });
   ui.showInfo(u);
   ui.renderQueue(queue.ordered(), u);
@@ -451,15 +508,15 @@ renderer.domElement.addEventListener('pointerdown', (e) => {
     inAttackRange(u, t.x, t.z);
 
   // 1. Attaque si le clic touche un ennemi réellement attaquable
-  if (attackable(hit.unit)) { doAttack(hit.unit); return; }
+  if (attackable(hit.unit)) { dispatch({ kind: 'attack', target: hit.unit.id }); return; }
   if (hit.tile) {
     // 2. Ou si le clic touche la case d'un ennemi attaquable
     const occupant = units.find(v => v.alive && v.x === hit.tile.x && v.z === hit.tile.z);
-    if (attackable(occupant)) { doAttack(occupant); return; }
+    if (attackable(occupant)) { dispatch({ kind: 'attack', target: occupant.id }); return; }
     // 3. Sinon le clic retombe sur la case (un ennemi hors de portée n'avale pas le clic)
     if (game.mode === 'move' && !game.hasMoved) {
       const k = board.key(hit.tile.x, hit.tile.z);
-      if (game.reach.cells.has(k)) doMove(k);
+      if (game.reach.cells.has(k)) dispatch({ kind: 'move', x: hit.tile.x, z: hit.tile.z });
     }
   }
 });
@@ -502,6 +559,8 @@ renderer.domElement.addEventListener('pointermove', (e) => {
 // ---------- Animations ----------
 const anims = [];
 function tween(dur, fn) {
+  // rendu en pause (onglet caché) : appliquer l'état final immédiatement
+  if (performance.now() - lastFrame > 400) { fn(1); return Promise.resolve(); }
   return new Promise(res => anims.push({ t: 0, dur, fn, res }));
 }
 
@@ -518,8 +577,8 @@ addEventListener('resize', () => {
 
 const clock = new THREE.Clock();
 let idleT = 0;
-renderer.setAnimationLoop(() => {
-  const dt = clock.getDelta() * 1000;
+
+function stepAnims(dt) {
   for (let i = anims.length - 1; i >= 0; i--) {
     const a = anims[i];
     a.t += dt;
@@ -527,6 +586,21 @@ renderer.setAnimationLoop(() => {
     a.fn(k);
     if (k >= 1) { anims.splice(i, 1); a.res(); }
   }
+}
+
+// Onglet caché : le rAF est en pause — les tweens encore en vol sont soldés
+// d'un coup et la caméra garde des matrices à jour pour les projections.
+let lastFrame = 0;
+setInterval(() => {
+  if (performance.now() - lastFrame < 400) return; // le rAF tourne, rien à faire
+  stepAnims(1e6); // solde tout tween en attente
+  camera.updateMatrixWorld(true);
+}, 250);
+
+renderer.setAnimationLoop(() => {
+  lastFrame = performance.now();
+  const dt = clock.getDelta() * 1000;
+  stepAnims(dt);
   ring.rotation.z += 0.02;
   // idle : les figurines respirent (humains) ou tanguent (zombies)
   idleT += dt / 1000;
@@ -544,14 +618,47 @@ renderer.setAnimationLoop(() => {
 // HMR : ce module gère tout l'état du jeu — un patch à chaud dupliquerait la scène.
 if (import.meta.hot) import.meta.hot.accept(() => location.reload());
 
-// Point d'entrée : setup (accueil → armée → VS) puis premier tour
-ui.showSetup(({ mode, playerTeam }) => {
-  game.aiTeam = mode === 'ai' ? (playerTeam === 'humans' ? 'zombies' : 'humans') : null;
+// ---------- Démarrage ----------
+function startAi(playerTeam) {
+  game.aiTeam = playerTeam === 'humans' ? 'zombies' : 'humans';
   ui.showVs(() => {
     game.started = true;
     startTurn();
   });
-});
+}
+
+function startOnline(room) {
+  const waiting = ui.showWaiting();
+  const net = connect({
+    room,
+    onWaiting: (code) => waiting.setLink(`${location.origin}${location.pathname}?room=${code}`),
+    onStart: ({ team }) => {
+      waiting.close();
+      game.online = { send: net.sendAction, myTeam: team };
+      ui.showVs(() => {
+        game.started = true;
+        startTurn();
+      }, team);
+    },
+    onAction: (a) => enqueue(a),
+    onOpponentLeft: () => {
+      if (game.over) return;
+      game.over = true;
+      board.clearHighlights();
+      ui.showOpponentLeft();
+    },
+    onClosed: () => {
+      if (game.over) return;
+      game.over = true;
+      ui.showOpponentLeft(game.started ? 'Connexion perdue…' : 'Serveur injoignable');
+    },
+  });
+}
+
+// Lien d'invitation (?room=CODE) : on rejoint directement le duel
+const roomParam = new URLSearchParams(location.search).get('room');
+if (roomParam) startOnline(roomParam);
+else ui.showSetup({ onAi: startAi, onOnline: () => startOnline(null) });
 
 // Poignée de debug pour les tests
-window.MB = { game, units, queue, board, doAttack, doMove, endTurn, computeDamage, toScreen, camera, pick };
+window.MB = { game, units, queue, board, doAttack, doMove, endTurn, computeDamage, toScreen, camera, pick, dispatch };
