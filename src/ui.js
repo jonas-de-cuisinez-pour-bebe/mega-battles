@@ -119,9 +119,10 @@ const CSS = `
 }
 .mb-btn-col { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 12px; }
 .mb-btn-img {
-  width: 350px; height: 106px; display: flex; align-items: center; justify-content: center;
-  background: center / contain no-repeat;
-  color: #fff; font: 800 23px system-ui; letter-spacing: 1.5px; text-align: center;
+  width: 330px; height: 112px; display: flex; align-items: center; justify-content: center;
+  background: center / 100% 100% no-repeat;
+  padding: 0 40px; box-sizing: border-box;
+  color: #fff; font: 800 20px system-ui; letter-spacing: 1px; text-align: center;
   text-shadow: 0 2px 5px rgba(0,0,0,0.75), 0 0 12px rgba(0,0,0,0.5);
   cursor: pointer; transition: transform 0.12s;
 }
