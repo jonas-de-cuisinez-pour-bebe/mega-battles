@@ -609,6 +609,10 @@ renderer.setAnimationLoop(() => {
     const z = u.team === 'zombies';
     u.model.scale.y = u.squash * (1 + (z ? 0.02 : 0.014) * Math.sin(idleT * (z ? 1.8 : 2.4) + u.id * 1.7));
     u.model.rotation.z = (z ? 0.05 : 0.014) * Math.sin(idleT * (z ? 1.1 : 1.5) + u.id * 2.3);
+    // le squelette ailé vole en stationnaire au-dessus de son socle
+    if (z && u.cls.key === 'archer') {
+      u.model.position.y = 0.38 + 0.06 * Math.sin(idleT * 2.1 + u.id * 1.3);
+    }
   }
   if (game.busy || game.over || !game.started) cursor.visible = false;
   controls.update();
