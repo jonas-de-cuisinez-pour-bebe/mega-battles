@@ -12,20 +12,35 @@ const CSS = `
 }
 .mb-banner b { text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* Molette d'action (style Widget 0.1 : verre + carbone) */
+/* Molette d'action, fidèle au Widget 0.1 de 2013 : gros cadran central
+   (✕ rouge de fin de tour intégré en bas) + satellites asymétriques */
 .mb-wheel {
-  position: fixed; left: 30px; bottom: 140px; width: 200px; height: 200px;
+  position: fixed; left: 24px; bottom: 130px; width: 224px; height: 170px;
   pointer-events: none;
 }
 .mb-wheel .hubc {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
-  width: 62px; height: 62px; border-radius: 50%;
-  background: url('/assets/ui/carbon.png') center/130px, radial-gradient(circle at 35% 30%, #3c414b, #1d2026);
-  border: 3px solid #6a707c; color: #fff; display: flex;
-  align-items: center; justify-content: center;
-  font: 800 14px system-ui; letter-spacing: 0.5px;
-  box-shadow: inset 0 2px 5px rgba(255,255,255,0.14), 0 5px 12px rgba(0,0,0,0.55);
+  position: absolute; left: 50%; top: 48%; transform: translate(-50%,-50%);
+  width: 92px; height: 92px; border-radius: 50%;
+  background: url('/assets/ui/carbon.png') center/150px, radial-gradient(circle at 35% 30%, #3c414b, #1d2026);
+  border: 4px solid #6a707c; color: #fff;
+  font: 800 15px system-ui; letter-spacing: 0.5px;
+  box-shadow: inset 0 2px 5px rgba(255,255,255,0.14), 0 6px 14px rgba(0,0,0,0.55);
+  overflow: hidden;
 }
+.mb-wheel .mb-cls {
+  position: absolute; left: 0; right: 0; top: 16px; text-align: center;
+  text-shadow: 0 1px 3px #000;
+}
+.mb-btn-end {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 36%;
+  background: radial-gradient(circle at 50% -30%, #e0604f, #a32c22 75%);
+  border-top: 2px solid rgba(0,0,0,0.5);
+  color: #fff; font: 800 17px system-ui;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; pointer-events: auto;
+  box-shadow: inset 0 -4px 8px rgba(0,0,0,0.4), inset 0 2px 3px rgba(255,255,255,0.22);
+}
+.mb-btn-end:hover { filter: brightness(1.18); }
 .mb-btn {
   position: absolute; width: 66px; height: 66px;
   background: center / contain no-repeat;
@@ -41,10 +56,11 @@ const CSS = `
 }
 .mb-btn.disabled { filter: grayscale(1) opacity(0.35); pointer-events: none; }
 .mb-btn.selected { transform: scale(1.14); filter: drop-shadow(0 0 12px rgba(255,255,255,0.85)); }
-.mb-btn-move   { left: -4px; top: 2px; background-image: url('/assets/ui/act_move.png'); }
-.mb-btn-attack { right: -4px; top: 2px; background-image: url('/assets/ui/act_attack.png'); }
-.mb-btn-skill  { left: -4px; bottom: 8px; background-image: url('/assets/ui/act_skill.png'); }
-.mb-btn-end    { right: -4px; bottom: 8px; background-image: url('/assets/ui/act_end.png'); }
+/* satellites accrochés au cadran, placement asymétrique façon maquette */
+.mb-btn-attack { width: 58px; height: 58px; left: 8px; top: 56px; background-image: url('/assets/ui/act_attack.png'); }
+.mb-btn-move   { width: 58px; height: 58px; right: 8px; top: 48px; background-image: url('/assets/ui/act_move.png'); }
+.mb-btn-skill  { width: 50px; height: 50px; left: 28px; top: -8px; background-image: url('/assets/ui/act_skill.png'); }
+.mb-btn-skill span { left: auto; right: 54px; bottom: 8px; transform: none; }
 .mb-cd {
   position: absolute; top: -5px; right: -5px; width: 24px; height: 24px;
   border-radius: 50%; background: #1d2026; border: 2px solid #6a707c;
@@ -197,11 +213,13 @@ export function initUI(handlers) {
   const banner = el('div', 'mb-banner');
   const wheel = el('div', 'mb-wheel');
   wheel.innerHTML = `
-    <div class="mb-btn mb-btn-move"><span>DÉPLACER</span></div>
-    <div class="mb-btn mb-btn-attack"><span>ATTAQUER</span></div>
     <div class="mb-btn mb-btn-skill"><span>SKILL</span><i class="mb-cd"></i></div>
-    <div class="mb-btn mb-btn-end"><span>FIN DE TOUR</span></div>
-    <div class="hubc"></div>`;
+    <div class="mb-btn mb-btn-attack"><span>ATTAQUER</span></div>
+    <div class="mb-btn mb-btn-move"><span>DÉPLACER</span></div>
+    <div class="hubc">
+      <span class="mb-cls"></span>
+      <div class="mb-btn-end" title="Fin de tour">✕</div>
+    </div>`;
   const info = el('div', 'mb-info');
   const queue = el('div', 'mb-queue');
   const tip = el('div', 'mb-tip');
@@ -232,7 +250,7 @@ export function initUI(handlers) {
     },
 
     updateWheel(unit, { mode, canMove, canAttack, locked }) {
-      hub.textContent = unit.cls.abbr;
+      hub.querySelector('.mb-cls').textContent = unit.cls.abbr;
       hub.style.borderColor = TEAMS[unit.team].css;
       toggle(btnMove, canMove && !locked, mode === 'move');
       toggle(btnAttack, canAttack && !locked, mode === 'attack');
