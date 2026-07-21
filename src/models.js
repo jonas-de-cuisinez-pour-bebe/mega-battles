@@ -300,9 +300,11 @@ function zombiesArcher() {
       f.scale.z = 0.35;
       w.add(f);
     }
-    w.position.set(side * 0.18, 0.82, -0.16);
-    w.rotation.z = side * 0.5;
-    w.scale.setScalar(1.45);
+    // accrochées dans le dos, déployées vers l'arrière, envergure massive
+    w.position.set(side * 0.1, 0.85, -0.26);
+    w.rotation.z = side * 0.55;
+    w.rotation.y = side * 0.45;
+    w.scale.setScalar(1.9);
     g.add(w);
   }
 

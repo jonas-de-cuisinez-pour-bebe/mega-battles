@@ -179,6 +179,26 @@ const CSS = `
 .mb-btn-orange { background-image: url('/assets/ui/btn_orange.png'); }
 .mb-btn-green { background-image: url('/assets/ui/btn_green.png'); }
 
+/* Lien crédits + écran crédits */
+.mb-credits-link {
+  margin-top: 10px; color: #fff; font: 700 14px system-ui; letter-spacing: 1px;
+  opacity: 0.8; cursor: pointer; text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+  background: none; border: none; text-transform: uppercase;
+}
+.mb-credits-link:hover { opacity: 1; text-decoration: underline; }
+.mb-credits {
+  text-align: center; color: #fff; max-width: 460px; padding: 20px;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+}
+.mb-credits h2 { font: 800 30px system-ui; letter-spacing: 2px; margin: 0 0 4px; }
+.mb-credits .copy { opacity: 0.75; font: 600 14px system-ui; margin-bottom: 22px; }
+.mb-credits .role { opacity: 0.6; font: 700 12px system-ui; letter-spacing: 2px;
+  text-transform: uppercase; margin: 20px 0 8px; }
+.mb-credits .names { font: 700 19px system-ui; line-height: 1.7; }
+.mb-credits .lic { opacity: 0.7; font: 500 13px system-ui; margin-top: 24px; line-height: 1.6; }
+.mb-credits a { color: #6fbf5f; font-weight: 700; text-decoration: none; }
+.mb-credits a:hover { text-decoration: underline; }
+
 /* Attente d'adversaire */
 .mb-spinner {
   width: 46px; height: 46px; border-radius: 50%;
@@ -335,6 +355,35 @@ export function initUI(handlers) {
           imgBtn('PARTIE RAPIDE', 'contre l’IA', 'orange', () => pickArmy()),
         );
         screen.appendChild(col);
+        const creditsBtn = el('button', 'mb-credits-link');
+        creditsBtn.textContent = 'Crédits';
+        creditsBtn.onclick = credits;
+        screen.appendChild(creditsBtn);
+      };
+
+      const credits = () => {
+        screen.classList.add('mb-home');
+        screen.innerHTML = `
+          <div class="mb-credits">
+            <h2>MEGA BATTLES</h2>
+            <div class="copy">© 2013 — un jeu imaginé avec passion</div>
+            <div class="role">Game design & concept art</div>
+            <div class="names">
+              Alexandre Cesarini<br>
+              Alexandre Dury<br>
+              Aurélien Lepage<br>
+              Jonas Maumené
+            </div>
+            <div class="lic">
+              Projet open source sous licence MIT.<br>
+              <a href="https://github.com/jonas-de-cuisinez-pour-bebe/mega-battles"
+                 target="_blank" rel="noopener">github.com/…/mega-battles ↗</a>
+            </div>
+          </div>`;
+        const back = el('button', 'mb-credits-link');
+        back.textContent = '← Retour';
+        back.onclick = home;
+        screen.appendChild(back);
       };
 
       const imgBtn = (label, sub, color, onClick) => {

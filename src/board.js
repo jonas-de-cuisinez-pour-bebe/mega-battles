@@ -179,7 +179,7 @@ export class Board {
     }
 
     g.rotation.y = v * Math.PI * 2;
-    g.scale.setScalar(0.95 + vary(z, x) * 0.2);
+    g.scale.setScalar(1.55 + vary(z, x) * 0.35);
     g.traverse(o => { if (o.isMesh) o.castShadow = true; });
     g.position.copy(this.worldPos(x, z));
     this.scene.add(g);
