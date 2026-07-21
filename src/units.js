@@ -77,11 +77,26 @@ export class Unit {
   #drawHpBar() {
     const ctx = this.hpCanvas.getContext('2d');
     ctx.clearRect(0, 0, 96, 14);
-    ctx.fillStyle = 'rgba(0,0,0,0.65)';
-    ctx.fillRect(0, 0, 96, 14);
+    // cadre sombre arrondi avec liseré
+    ctx.beginPath();
+    ctx.roundRect(1, 1, 94, 12, 6);
+    ctx.fillStyle = 'rgba(10,12,15,0.8)';
+    ctx.fill();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(120,128,140,0.9)';
+    ctx.stroke();
+    // jauge colorée + reflet glossy
     const ratio = this.hp / this.maxHp;
-    ctx.fillStyle = ratio > 0.5 ? '#3fbf4a' : ratio > 0.25 ? '#e0a52e' : '#d0453f';
-    ctx.fillRect(2, 2, 92 * ratio, 10);
+    if (ratio > 0) {
+      ctx.beginPath();
+      ctx.roundRect(3, 3, 90 * ratio, 8, 4);
+      ctx.fillStyle = ratio > 0.5 ? '#4ecc58' : ratio > 0.25 ? '#e8ad2e' : '#e0503f';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.roundRect(3, 3, 90 * ratio, 4, 3);
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fill();
+    }
     this.hpTexture.needsUpdate = true;
   }
 

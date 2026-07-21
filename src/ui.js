@@ -4,51 +4,63 @@ const CSS = `
 #hud * { box-sizing: border-box; }
 .mb-banner {
   position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
-  padding: 8px 22px; border-radius: 999px; color: #fff;
-  font: 600 15px system-ui; background: rgba(0,0,0,0.6);
-  border: 2px solid rgba(255,255,255,0.25); pointer-events: none;
+  padding: 9px 24px; border-radius: 999px; color: #fff;
+  font: 600 15px system-ui;
+  background: url('/assets/ui/carbon.png') center/220px, rgba(10,11,14,0.85);
+  border: 2px solid #565d68; pointer-events: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.55);
 }
 .mb-banner b { text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* Molette d'action */
+/* Molette d'action (style Widget 0.1 : verre + carbone) */
 .mb-wheel {
-  position: fixed; left: 30px; bottom: 140px; width: 150px; height: 150px;
+  position: fixed; left: 30px; bottom: 140px; width: 200px; height: 200px;
   pointer-events: none;
 }
 .mb-wheel .hubc {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
-  width: 74px; height: 74px; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #4a4f5a, #23262d);
-  border: 4px solid #6a707c; color: #fff; display: flex;
-  align-items: center; justify-content: center; flex-direction: column;
-  font: 700 13px system-ui;
+  width: 62px; height: 62px; border-radius: 50%;
+  background: url('/assets/ui/carbon.png') center/130px, radial-gradient(circle at 35% 30%, #3c414b, #1d2026);
+  border: 3px solid #6a707c; color: #fff; display: flex;
+  align-items: center; justify-content: center;
+  font: 800 14px system-ui; letter-spacing: 0.5px;
+  box-shadow: inset 0 2px 5px rgba(255,255,255,0.14), 0 5px 12px rgba(0,0,0,0.55);
 }
 .mb-btn {
-  position: absolute; width: 52px; height: 52px; border-radius: 12px;
-  transform: rotate(45deg); display: flex; align-items: center; justify-content: center;
-  cursor: pointer; pointer-events: auto; border: 2px solid rgba(0,0,0,0.35);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.45); user-select: none;
+  position: absolute; width: 66px; height: 66px;
+  background: center / contain no-repeat;
+  cursor: pointer; pointer-events: auto; user-select: none;
+  filter: drop-shadow(0 3px 7px rgba(0,0,0,0.55));
+  transition: transform 0.1s;
 }
-.mb-btn span { transform: rotate(-45deg); font: 700 10px system-ui; color: #fff; text-align: center; }
-.mb-btn.disabled { opacity: 0.3; pointer-events: none; }
-.mb-btn.selected { outline: 3px solid #fff; }
-.mb-btn-move   { left: -6px; top: 8px; background: #58a34c; }
-.mb-btn-attack { right: -6px; top: 8px; background: #c2453d; }
-.mb-btn-skill  { left: -6px; bottom: -14px; background: #d8952e; }
-.mb-btn-end {
-  position: absolute; left: 50%; bottom: -46px; transform: translateX(-50%);
-  padding: 7px 16px; border-radius: 8px; background: #e0862e; color: #fff;
-  font: 700 12px system-ui; cursor: pointer; pointer-events: auto;
-  border: 2px solid rgba(0,0,0,0.35); box-shadow: 0 3px 8px rgba(0,0,0,0.45);
-  white-space: nowrap;
+.mb-btn:hover { transform: scale(1.1); }
+.mb-btn span {
+  position: absolute; left: 50%; bottom: -15px; transform: translateX(-50%);
+  font: 800 10px system-ui; color: #fff; letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px #000, 0 0 6px rgba(0,0,0,0.7); white-space: nowrap;
+}
+.mb-btn.disabled { filter: grayscale(1) opacity(0.35); pointer-events: none; }
+.mb-btn.selected { transform: scale(1.14); filter: drop-shadow(0 0 12px rgba(255,255,255,0.85)); }
+.mb-btn-move   { left: -4px; top: 2px; background-image: url('/assets/ui/act_move.png'); }
+.mb-btn-attack { right: -4px; top: 2px; background-image: url('/assets/ui/act_attack.png'); }
+.mb-btn-skill  { left: -4px; bottom: 8px; background-image: url('/assets/ui/act_skill.png'); }
+.mb-btn-end    { right: -4px; bottom: 8px; background-image: url('/assets/ui/act_end.png'); }
+.mb-cd {
+  position: absolute; top: -5px; right: -5px; width: 24px; height: 24px;
+  border-radius: 50%; background: #1d2026; border: 2px solid #6a707c;
+  color: #ffd34a; font: 800 13px system-ui; font-style: normal;
+  display: none; align-items: center; justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.6);
 }
 
 /* Panneau d'infos unité */
 .mb-info {
-  position: fixed; left: 210px; bottom: 80px; min-width: 240px;
-  background: rgba(15,17,22,0.85); border: 2px solid rgba(255,255,255,0.15);
-  border-radius: 12px; padding: 12px 16px; color: #fff;
+  position: fixed; left: 252px; bottom: 80px; min-width: 250px;
+  background: url('/assets/ui/carbon.png') center/260px, rgba(13,15,19,0.92);
+  border: 2px solid #4a5058; outline: 1px solid rgba(0,0,0,0.7);
+  border-radius: 14px; padding: 12px 16px; color: #fff;
   font: 500 13px system-ui; pointer-events: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 6px 16px rgba(0,0,0,0.55);
 }
 .mb-info h3 { margin: 0 0 6px; font-size: 16px; }
 .mb-info .hpbar { height: 10px; border-radius: 5px; background: #333; overflow: hidden; margin: 4px 0 8px; }
@@ -59,15 +71,21 @@ const CSS = `
 /* File d'initiative */
 .mb-queue {
   position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
-  background: rgba(10,11,14,0.88); display: flex; align-items: center;
+  background: url('/assets/ui/carbon.png') center/240px, rgba(9,10,13,0.94);
+  border-top: 2px solid #454b54;
+  box-shadow: 0 -5px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+  display: flex; align-items: center;
   justify-content: center; gap: 10px; pointer-events: none;
 }
 .mb-chip {
   width: 42px; height: 42px; border-radius: 50%; display: flex;
   align-items: center; justify-content: center; color: #fff;
-  font: 700 11px system-ui; border: 2px solid rgba(0,0,0,0.4);
+  font: 800 11px system-ui; border: 2px solid rgba(0,0,0,0.55);
   flex: 0 0 auto; pointer-events: auto; cursor: pointer;
   transition: transform 0.12s;
+  box-shadow: inset 0 7px 8px -4px rgba(255,255,255,0.55),
+              inset 0 -7px 8px -4px rgba(0,0,0,0.45), 0 2px 5px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
 }
 .mb-chip:hover { transform: scale(1.18); border-color: #fff; }
 .mb-chip.active { outline: 3px dashed #fff; outline-offset: 2px; width: 48px; height: 48px; }
@@ -75,7 +93,9 @@ const CSS = `
 /* Dégâts flottants */
 .mb-dmg {
   position: fixed; transform: translate(-50%, -50%); pointer-events: none;
-  font: 800 26px system-ui; color: #ff5a4e; text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  font: 900 32px system-ui; color: #ff6a52;
+  -webkit-text-stroke: 1.5px #47100a;
+  text-shadow: 0 3px 6px rgba(0,0,0,0.85);
   animation: mb-rise 1.1s ease-out forwards;
 }
 @keyframes mb-rise {
@@ -85,9 +105,11 @@ const CSS = `
 
 /* Tooltip inspection */
 .mb-tip {
-  position: fixed; background: rgba(15,17,22,0.92); color: #fff;
-  border: 1px solid rgba(255,255,255,0.25); border-radius: 8px;
+  position: fixed; color: #fff;
+  background: url('/assets/ui/carbon.png') center/200px, rgba(13,15,19,0.94);
+  border: 2px solid #4a5058; border-radius: 10px;
   padding: 8px 12px; font: 500 12px system-ui; pointer-events: none; z-index: 20;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 10px rgba(0,0,0,0.55);
 }
 
 /* Écrans de setup */
@@ -163,10 +185,7 @@ const CSS = `
   gap: 24px; pointer-events: auto; z-index: 50;
 }
 .mb-victory h1 { color: #fff; font: 800 48px system-ui; margin: 0; }
-.mb-victory button {
-  padding: 14px 42px; font: 700 18px system-ui; color: #fff; background: #58a34c;
-  border: none; border-radius: 12px; cursor: pointer;
-}
+.mb-victory .mb-btn-img { width: 280px; height: 92px; font-size: 19px; }
 `;
 
 export function initUI(handlers) {
@@ -178,11 +197,11 @@ export function initUI(handlers) {
   const banner = el('div', 'mb-banner');
   const wheel = el('div', 'mb-wheel');
   wheel.innerHTML = `
-    <div class="mb-btn mb-btn-move"><span>MOVE</span></div>
-    <div class="mb-btn mb-btn-attack"><span>ATTACK</span></div>
-    <div class="mb-btn mb-btn-skill"><span>SKILL</span></div>
-    <div class="hubc"></div>
-    <div class="mb-btn-end">END TURN</div>`;
+    <div class="mb-btn mb-btn-move"><span>DÉPLACER</span></div>
+    <div class="mb-btn mb-btn-attack"><span>ATTAQUER</span></div>
+    <div class="mb-btn mb-btn-skill"><span>SKILL</span><i class="mb-cd"></i></div>
+    <div class="mb-btn mb-btn-end"><span>FIN DE TOUR</span></div>
+    <div class="hubc"></div>`;
   const info = el('div', 'mb-info');
   const queue = el('div', 'mb-queue');
   const tip = el('div', 'mb-tip');
@@ -219,8 +238,9 @@ export function initUI(handlers) {
       toggle(btnAttack, canAttack && !locked, mode === 'attack');
       const skillUsable = !locked && !unit.cls.passive && unit.cooldown === 0;
       toggle(btnSkill, skillUsable, unit.armed);
-      btnSkill.querySelector('span').textContent =
-        unit.cooldown > 0 ? `SKILL (${unit.cooldown})` : 'SKILL';
+      const cd = btnSkill.querySelector('.mb-cd');
+      cd.style.display = unit.cooldown > 0 ? 'flex' : 'none';
+      cd.textContent = unit.cooldown || '';
       btnSkill.title = `${unit.cls.skillName} — ${unit.cls.skillDesc}`;
     },
 
@@ -353,8 +373,8 @@ export function initUI(handlers) {
     showOpponentLeft(msg) {
       const v = el('div', 'mb-victory');
       v.innerHTML = `<h1 style="color:#fff;font-size:34px">${msg || 'L’adversaire a fui le champ de bataille !'}</h1>`;
-      const btn = document.createElement('button');
-      btn.textContent = 'Retour à l’accueil';
+      const btn = el('div', 'mb-btn-img mb-btn-orange');
+      btn.innerHTML = '<div>RETOUR À L’ACCUEIL</div>';
       btn.onclick = () => { location.href = location.pathname; };
       v.appendChild(btn);
       hud.appendChild(v);
@@ -386,8 +406,8 @@ export function initUI(handlers) {
         <img src="/assets/units/${teamId}_dps.png" alt=""
              style="width:260px;height:260px;object-fit:contain${teamId === 'zombies' ? ';transform:scaleX(-1)' : ''}">
         <h1 style="color:${t.css}">${t.label} l'emportent !</h1>`;
-      const btn = document.createElement('button');
-      btn.textContent = 'Rejouer';
+      const btn = el('div', 'mb-btn-img mb-btn-green');
+      btn.innerHTML = '<div>REJOUER</div>';
       btn.onclick = () => location.reload();
       v.appendChild(btn);
       hud.appendChild(v);
