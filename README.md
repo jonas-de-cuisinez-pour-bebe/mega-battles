@@ -24,8 +24,22 @@ Design source : doc « Mega Battles » + mock-ups juillet 2013 (Design/).
 
 ## Jouer en ligne
 
-https://mega-battles.cellar-c2.services.clever-cloud.com/index.html
+**https://mega-battles.cleverapps.io/** — multijoueur en direct par WebSocket :
+« Jouer en ligne » matche automatiquement deux joueurs (ou partage ton lien
+d'invitation `?room=XXXX` : la partie démarre dès que l'ami l'ouvre).
 
-(le `/index.html` est obligatoire : Cellar ne sert pas d'index à la racine du bucket)
+Architecture : le jeu est déterministe, le serveur (server/index.js) ne fait
+qu'apparier les joueurs et relayer les actions dans l'ordre — chaque client
+rejoue la même simulation.
 
-Redéploiement : `./deploy.sh` (build + sync vers le bucket Cellar).
+Redéploiement : `clever deploy` (app Node sur Clever Cloud, le build tourne
+dans `prestart`). L'ancien miroir statique Cellar (`./deploy.sh`) est obsolète
+depuis le passage au multijoueur.
+
+## Dev local
+
+```bash
+npm install
+PORT=8091 node server/index.js   # serveur de jeu (rooms + relais WS)
+npm run dev                      # vite (proxy /ws → 8091)
+```
