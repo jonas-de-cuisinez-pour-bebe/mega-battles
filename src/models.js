@@ -95,200 +95,222 @@ function humansTanker() {
   return g;
 }
 
+// DPS humain, croquis « DPS design » : marcel, bandana au front, avant-bras
+// bandé, gros poignard en prise inversée, short
 function humansDps() {
   const g = new THREE.Group();
-  const skin = M(0xe6b482), hair = M(0x6e4a2f), red = M(0xd04438);
-  const tank = M(0x50565e), pants = M(0x64788a), boots = M(0x42464d);
-  const blade = M(0xc7ccd4, { metalness: 0.5, roughness: 0.35 });
+  const skin = M(0xe6b482), hair = M(0x2e2a26), bandana = M(0x3a3f45);
+  const marcel = M(0xb9bec6), shorts = M(0x5c6e7d), boots = M(0x42464d);
+  const wrap = M(0xd9d4c8), blade = M(0xc7ccd4, { metalness: 0.5, roughness: 0.35 });
 
-  // baskets + jambes + bassin
-  g.add(box(0.18, 0.12, 0.3, boots, -0.12, 0.06, 0.02));
-  g.add(box(0.18, 0.12, 0.3, boots, 0.12, 0.06, 0.02));
-  g.add(cyl(0.08, 0.09, 0.28, pants, -0.12, 0.28));
-  g.add(cyl(0.08, 0.09, 0.28, pants, 0.12, 0.28));
-  g.add(box(0.32, 0.16, 0.22, pants, 0, 0.48));
+  // bottes + jambes nues + short
+  g.add(box(0.19, 0.13, 0.3, boots, -0.12, 0.065, 0.02));
+  g.add(box(0.19, 0.13, 0.3, boots, 0.12, 0.065, 0.02));
+  g.add(cyl(0.075, 0.085, 0.24, skin, -0.12, 0.27));
+  g.add(cyl(0.075, 0.085, 0.24, skin, 0.12, 0.27));
+  g.add(box(0.34, 0.2, 0.24, shorts, 0, 0.47));
+  g.add(box(0.36, 0.05, 0.26, boots, 0, 0.55)); // ceinture
 
-  // torse fin en débardeur + dog tags
-  g.add(cyl(0.16, 0.19, 0.36, tank, 0, 0.72));
-  g.add(box(0.07, 0.09, 0.03, M(0xb9bec6, { metalness: 0.6 }), 0, 0.76, 0.16));
+  // torse musclé en marcel
+  g.add(cyl(0.17, 0.2, 0.38, marcel, 0, 0.73));
+  g.add(ball(0.06, skin, -0.12, 0.9, 0.1)); // épaules nues
+  g.add(ball(0.06, skin, 0.12, 0.9, 0.1));
 
-  // bras nus + mitaines ; couteau bas dans la main droite
-  g.add(cyl(0.06, 0.07, 0.3, skin, -0.25, 0.68, 0, 0, 0.3));
-  g.add(cyl(0.06, 0.07, 0.3, skin, 0.25, 0.68, 0, 0, -0.3));
-  g.add(ball(0.08, boots, -0.31, 0.5));
-  g.add(ball(0.08, boots, 0.31, 0.5));
-  g.add(box(0.035, 0.34, 0.07, blade, 0.33, 0.32, 0.05, 0.15));
-  g.add(box(0.1, 0.04, 0.09, boots, 0.32, 0.48, 0.03));
+  // bras gauche nu, bras droit bandé tenant le poignard inversé (lame vers le bas)
+  g.add(cyl(0.06, 0.07, 0.3, skin, -0.26, 0.68, 0, 0, 0.3));
+  g.add(ball(0.075, skin, -0.32, 0.5));
+  g.add(cyl(0.065, 0.075, 0.3, wrap, 0.26, 0.68, 0, 0, -0.3)); // avant-bras bandé
+  g.add(ball(0.08, wrap, 0.32, 0.5));
+  g.add(box(0.05, 0.4, 0.09, blade, 0.33, 0.26, 0.02, 0, 0, 0.06)); // lame inversée
+  g.add(box(0.12, 0.04, 0.1, boots, 0.32, 0.47, 0.02)); // garde
 
-  // grosse tête : peau, cheveux en bataille, bandeau rouge, clope
+  // grosse tête : cheveux noirs en casque + bandana fin sur le front
   g.add(ball(0.32, skin, 0, 1.12, 0, 1, 0.95, 1));
-  g.add(ball(0.33, hair, 0, 1.26, -0.05, 1, 0.55, 1));
-  g.add(cyl(0.33, 0.33, 0.08, red, 0, 1.2, 0, 0, 0, true));
-  g.add(box(0.1, 0.1, 0.06, red, 0, 1.2, -0.31)); // nœud du bandeau
-  const cig = cyl(0.015, 0.015, 0.14, M(0xf2f0e8), 0.08, 1.0, 0.32, 1.2, 0.4);
-  g.add(cig);
-  g.add(ball(0.02, M(0xe0662e, { emissive: 0xe0662e, emissiveIntensity: 0.8 }), 0.12, 0.97, 0.36));
+  g.add(ball(0.335, hair, 0, 1.24, -0.04, 1, 0.6, 1));
+  g.add(cyl(0.325, 0.325, 0.07, bandana, 0, 1.16, 0, 0, 0, true));
   return g;
 }
 
+// Distance humain, croquis « DPS_human » : maigre, bandeau rouge, clope au bec,
+// fusil tenu bas le long de la jambe
 function humansArcher() {
   const g = new THREE.Group();
-  const skin = M(0xe6b482), oliveJ = M(0x6f7d4e), pants = M(0x5c6e7d);
-  const boots = M(0x42464d), capM = M(0x4a5a3e), scarf = M(0x83905c);
+  const skin = M(0xe6b482), hair = M(0x6e4a2f), red = M(0xd04438);
+  const tank = M(0x707a58), pants = M(0x5c6e7d), boots = M(0x42464d);
   const gun = M(0x53575e, { metalness: 0.4, roughness: 0.4 }), stock = M(0x5f4a33);
 
-  // bottes + jambes + bassin
-  g.add(box(0.2, 0.13, 0.3, boots, -0.13, 0.065, 0.02));
-  g.add(box(0.2, 0.13, 0.3, boots, 0.13, 0.065, 0.02));
-  g.add(cyl(0.085, 0.095, 0.26, pants, -0.13, 0.28));
-  g.add(cyl(0.085, 0.095, 0.26, pants, 0.13, 0.28));
-  g.add(box(0.34, 0.16, 0.24, pants, 0, 0.47));
+  // bottes + jambes (pantalon retroussé) + bassin
+  g.add(box(0.18, 0.12, 0.29, boots, -0.12, 0.06, 0.02));
+  g.add(box(0.18, 0.12, 0.29, boots, 0.12, 0.06, 0.02));
+  g.add(cyl(0.075, 0.085, 0.26, pants, -0.12, 0.28));
+  g.add(cyl(0.075, 0.085, 0.26, pants, 0.12, 0.28));
+  g.add(box(0.3, 0.16, 0.22, pants, 0, 0.47));
 
-  // veste + sac à dos + antenne
-  g.add(cyl(0.19, 0.22, 0.4, oliveJ, 0, 0.72));
-  g.add(box(0.3, 0.34, 0.16, capM, 0, 0.76, -0.24));
-  g.add(cyl(0.008, 0.008, 0.5, M(0x2e3236), 0.1, 1.05, -0.28));
+  // torse maigre en débardeur
+  g.add(cyl(0.15, 0.18, 0.36, tank, 0, 0.72));
 
-  // bras
-  g.add(cyl(0.07, 0.08, 0.3, oliveJ, -0.28, 0.7, 0, 0, 0.3));
-  g.add(cyl(0.07, 0.08, 0.3, oliveJ, 0.28, 0.78, 0, -0.5, -0.9));
-  g.add(ball(0.08, skin, -0.34, 0.52));
-  g.add(ball(0.08, skin, 0.3, 0.95, 0.12));
-
-  // tête : casquette basse + écharpe sur la bouche
-  g.add(ball(0.31, skin, 0, 1.12, 0, 1, 0.95, 1));
-  g.add(ball(0.325, capM, 0, 1.24, -0.02, 1, 0.55, 1));
-  g.add(box(0.34, 0.05, 0.22, capM, 0, 1.19, 0.25, 0.12));
-  g.add(cyl(0.32, 0.34, 0.14, scarf, 0, 0.95, 0.02));
-
-  // fusil long à lunette, posé sur l'épaule droite
+  // bras nus ; le droit tient le fusil bas, canon vers le sol
+  g.add(cyl(0.055, 0.065, 0.28, skin, -0.24, 0.68, 0, 0, 0.3));
+  g.add(ball(0.07, skin, -0.3, 0.52));
+  g.add(cyl(0.055, 0.065, 0.28, skin, 0.24, 0.66, 0, 0, -0.15));
+  g.add(ball(0.07, skin, 0.27, 0.5));
   const rifle = new THREE.Group();
-  rifle.add(box(1.05, 0.05, 0.05, gun));
-  rifle.add(box(0.22, 0.09, 0.06, stock, -0.5, -0.03, 0));
-  rifle.add(cyl(0.035, 0.035, 0.16, gun, 0.1, 0.06, 0, 0, Math.PI / 2));
-  rifle.add(cone(0.02, 0.06, gun, 0.55, 0, 0, 0, -Math.PI / 2));
-  rifle.position.set(0.3, 1.05, 0.05);
-  rifle.rotation.z = 0.55;
+  rifle.add(box(0.05, 0.95, 0.05, gun));
+  rifle.add(box(0.07, 0.2, 0.06, stock, 0, 0.42, -0.02));
+  rifle.add(cone(0.02, 0.06, gun, 0, -0.5, 0, Math.PI));
+  rifle.position.set(0.29, 0.42, 0.06);
+  rifle.rotation.x = 0.12;
   g.add(rifle);
+
+  // grosse tête : cheveux bruns, bandeau rouge avec nœud, clope incandescente
+  g.add(ball(0.31, skin, 0, 1.1, 0, 1, 0.95, 1));
+  g.add(ball(0.32, hair, 0, 1.23, -0.05, 1, 0.55, 1));
+  g.add(cyl(0.315, 0.315, 0.08, red, 0, 1.17, 0, 0, 0, true));
+  g.add(box(0.1, 0.1, 0.06, red, 0, 1.17, -0.3)); // nœud du bandeau
+  g.add(cyl(0.015, 0.015, 0.14, M(0xf2f0e8), 0.08, 0.99, 0.31, 1.2, 0.4));
+  g.add(ball(0.02, M(0xe0662e, { emissive: 0xe0662e, emissiveIntensity: 0.8 }), 0.12, 0.96, 0.35));
   return g;
 }
 
 // ---------- Zombies ----------
 
+// Tank zombie, croquis « horde » : obèse au ventre énorme, pustules rondes,
+// petite tête ronde aux gros yeux vides, short déchiré — pas de bouclier
 function zombiesTanker() {
   const g = new THREE.Group();
-  const flesh = M(0x86a35c), fleshDark = M(0x6e8a49), armor = M(0x4c5248);
-  const strap = M(0x3d4238), rust = M(0x9aa3ab, { metalness: 0.3, roughness: 0.6 });
-  const rustSpot = M(0x8a5436);
+  const flesh = M(0x86a35c), fleshDark = M(0x6e8a49), shorts = M(0x6b5442);
+  const eye = M(0xf2f2ec), pupil = M(0x26201e);
 
-  // jambes trapues + pieds
-  g.add(box(0.26, 0.13, 0.34, strap, -0.18, 0.065, 0.02));
-  g.add(box(0.26, 0.13, 0.34, strap, 0.18, 0.065, 0.02));
-  g.add(cyl(0.13, 0.14, 0.2, fleshDark, -0.18, 0.24));
-  g.add(cyl(0.13, 0.14, 0.2, fleshDark, 0.18, 0.24));
+  // jambes courtaudes + pieds nus
+  g.add(box(0.24, 0.12, 0.32, fleshDark, -0.18, 0.06, 0.02));
+  g.add(box(0.24, 0.12, 0.32, fleshDark, 0.18, 0.06, 0.02));
+  g.add(cyl(0.12, 0.13, 0.16, fleshDark, -0.18, 0.2));
+  g.add(cyl(0.12, 0.13, 0.16, fleshDark, 0.18, 0.2));
 
-  // énorme corps gonflé + ventre + sangles + plaques
-  g.add(ball(0.52, flesh, 0, 0.72, 0, 1, 0.92, 0.85));
-  g.add(ball(0.4, fleshDark, 0, 0.6, 0.18, 1, 0.8, 0.7));
-  g.add(box(0.95, 0.09, 0.06, strap, 0, 0.78, 0.38, 0, 0, 0.6));
-  g.add(box(0.4, 0.22, 0.1, armor, -0.22, 1.0, 0.1, 0, 0, 0.25));
-  g.add(box(0.3, 0.18, 0.34, armor, 0.3, 1.02, 0));
+  // short déchiré sous le bide
+  g.add(box(0.52, 0.2, 0.4, shorts, 0, 0.36));
 
-  // petite tête enfoncée + yeux rouges
-  g.add(ball(0.18, flesh, 0.02, 1.24, 0.16));
-  g.add(ball(0.03, M(0xd83a2e, { emissive: 0xd83a2e, emissiveIntensity: 0.7 }), -0.04, 1.27, 0.32));
-  g.add(ball(0.03, M(0xd83a2e, { emissive: 0xd83a2e, emissiveIntensity: 0.7 }), 0.08, 1.27, 0.32));
+  // énorme corps-ventre sphérique qui déborde
+  g.add(ball(0.5, flesh, 0, 0.78, 0, 1, 0.95, 0.88));
+  g.add(ball(0.34, fleshDark, 0, 0.6, 0.24, 1, 0.75, 0.6)); // bide qui pend
+  g.add(ball(0.05, fleshDark, 0, 0.66, 0.5)); // nombril
 
-  // bras épais
-  g.add(cyl(0.12, 0.14, 0.42, flesh, -0.5, 0.62, 0, 0, 0.35));
-  g.add(cyl(0.12, 0.14, 0.42, flesh, 0.5, 0.62, 0, 0, -0.35));
-  g.add(ball(0.14, fleshDark, -0.58, 0.38));
-  g.add(ball(0.14, fleshDark, 0.58, 0.38));
+  // pustules et plaies rondes (croquis : cercles sur le corps)
+  const sore = M(0x9a4a3a);
+  g.add(ball(0.07, sore, -0.3, 0.95, 0.28));
+  g.add(ball(0.055, sore, 0.34, 0.8, 0.26));
+  g.add(ball(0.05, sore, -0.38, 0.66, 0.2));
+  g.add(ball(0.06, sore, 0.16, 1.02, 0.3));
+  g.add(ball(0.045, sore, 0.4, 0.9, -0.14));
 
-  // portière de voiture en guise de bouclier
-  const door = new THREE.Group();
-  door.add(box(0.08, 0.85, 0.6, rust));
-  door.add(box(0.09, 0.3, 0.44, M(0x6a7178), 0, 0.22, 0));
-  door.add(box(0.1, 0.05, 0.16, strap, 0, -0.05, 0.14));
-  door.add(box(0.09, 0.12, 0.1, rustSpot, 0, -0.28, -0.18));
-  door.add(box(0.09, 0.08, 0.14, rustSpot, 0, 0.02, 0.2));
-  door.position.set(0.68, 0.6, 0.05);
-  door.rotation.z = -0.1;
-  g.add(door);
+  // petite tête ronde enfoncée, gros yeux ronds vides
+  g.add(ball(0.22, flesh, 0, 1.32, 0.06));
+  g.add(ball(0.075, eye, -0.09, 1.34, 0.24));
+  g.add(ball(0.075, eye, 0.09, 1.34, 0.24));
+  g.add(ball(0.025, pupil, -0.09, 1.34, 0.3));
+  g.add(ball(0.025, pupil, 0.09, 1.34, 0.3));
+  g.add(box(0.12, 0.05, 0.03, pupil, 0, 1.2, 0.26)); // bouche molle
+
+  // gros bras ballants
+  g.add(cyl(0.11, 0.13, 0.44, flesh, -0.5, 0.7, 0, 0, 0.3));
+  g.add(cyl(0.11, 0.13, 0.44, flesh, 0.5, 0.7, 0, 0, -0.3));
+  g.add(ball(0.13, fleshDark, -0.58, 0.46));
+  g.add(ball(0.13, fleshDark, 0.58, 0.46));
   return g;
 }
 
+// DPS zombie, croquis « horde » : petit maigre en pull et jean, yeux vides
+// énormes, bouche béante, bras tendu avec la MAIN DÉTACHÉE qui flotte
 function zombiesDps() {
   const g = new THREE.Group();
-  const skin = M(0x7da05a), hood = M(0x4a4f45), hoodIn = M(0x363a33);
-  const pantsM = M(0x5d4a42), shoes = M(0x777b80), stain = M(0x7a2e26);
-  const eye = M(0xf2f2ec, { emissive: 0xf2f2ec, emissiveIntensity: 0.35 });
+  const skin = M(0x7da05a), sweater = M(0x4a5568), jeans = M(0x51616e);
+  const shoes = M(0x777b80), eye = M(0xf2f2ec, { emissive: 0xf2f2ec, emissiveIntensity: 0.3 });
+  const dark = M(0x26201e);
 
-  // baskets + jambes
-  g.add(box(0.18, 0.11, 0.3, shoes, -0.12, 0.055, 0.02));
-  g.add(box(0.18, 0.11, 0.3, shoes, 0.12, 0.055, 0.02));
-  g.add(cyl(0.075, 0.085, 0.28, pantsM, -0.12, 0.27));
-  g.add(cyl(0.075, 0.085, 0.28, pantsM, 0.12, 0.27));
+  // baskets + jambes en jean
+  g.add(box(0.17, 0.11, 0.28, shoes, -0.11, 0.055, 0.02));
+  g.add(box(0.17, 0.11, 0.28, shoes, 0.11, 0.055, 0.02));
+  g.add(cyl(0.07, 0.08, 0.3, jeans, -0.11, 0.28));
+  g.add(cyl(0.07, 0.08, 0.3, jeans, 0.11, 0.28));
 
-  // buste voûté en hoodie (penché vers l'avant) + tache sombre
-  const upper = new THREE.Group();
-  upper.add(cyl(0.18, 0.21, 0.4, hood, 0, 0.2));
-  upper.add(box(0.14, 0.12, 0.03, stain, 0.05, 0.18, 0.19));
-  // capuche + visage : gros yeux vides, bave
-  upper.add(ball(0.33, hood, 0, 0.6, -0.02));
-  upper.add(ball(0.26, skin, 0, 0.57, 0.1));
-  upper.add(cone(0.16, 0.25, hood, 0, 0.82, -0.18, -0.5));
-  upper.add(ball(0.075, eye, -0.1, 0.62, 0.32));
-  upper.add(ball(0.075, eye, 0.1, 0.62, 0.32));
-  upper.add(box(0.07, 0.12, 0.03, M(0x26201e), 0.01, 0.42, 0.33)); // bave noire
-  // longs bras griffus tendus vers l'avant
-  for (const side of [-1, 1]) {
-    upper.add(cyl(0.06, 0.07, 0.46, hood, side * 0.26, 0.28, 0.2, -0.9, side * 0.25));
-    const hand = new THREE.Group();
-    hand.add(ball(0.07, skin));
-    hand.add(cone(0.03, 0.12, skin, -0.04, -0.08, 0, Math.PI));
-    hand.add(cone(0.03, 0.14, skin, 0.03, -0.09, 0, Math.PI));
-    hand.position.set(side * 0.33, 0.06, 0.42);
-    upper.add(hand);
-  }
-  upper.position.y = 0.42;
-  upper.rotation.x = 0.3; // posture penchée, prête à bondir
-  g.add(upper);
+  // petit torse en pull
+  g.add(cyl(0.15, 0.17, 0.34, sweater, 0, 0.6));
+
+  // bras gauche ballant ; bras droit TENDU devant, main détachée qui flotte
+  g.add(cyl(0.055, 0.06, 0.28, sweater, -0.22, 0.56, 0, 0, 0.25));
+  g.add(ball(0.06, skin, -0.27, 0.4));
+  g.add(cyl(0.055, 0.06, 0.34, sweater, 0.1, 0.72, 0.2, -1.35, -0.1)); // tendu horizontal
+  g.add(ball(0.045, dark, 0.13, 0.74, 0.38)); // moignon sombre
+  const hand = new THREE.Group(); // la main, détachée quelques cm plus loin
+  hand.add(ball(0.065, skin));
+  hand.add(cone(0.025, 0.09, skin, -0.03, 0, 0.06, 1.4));
+  hand.add(cone(0.025, 0.1, skin, 0.03, 0, 0.06, 1.4));
+  hand.position.set(0.15, 0.73, 0.52);
+  g.add(hand);
+
+  // grosse tête : yeux vides énormes, bouche béante, cheveux en pétard
+  g.add(ball(0.29, skin, 0, 1.02, 0, 1, 0.95, 1));
+  g.add(ball(0.3, dark, 0, 1.16, -0.06, 1, 0.45, 1)); // tignasse
+  g.add(ball(0.085, eye, -0.1, 1.06, 0.24));
+  g.add(ball(0.085, eye, 0.1, 1.06, 0.24));
+  g.add(ball(0.065, dark, 0, 0.88, 0.26, 1, 1.3, 0.5)); // bouche béante ovale
   return g;
 }
 
+// Distance zombie, croquis « horde » : squelette AILÉ à l'arc, crâne grimaçant
 function zombiesArcher() {
   const g = new THREE.Group();
-  const skin = M(0x7da05a), skinDark = M(0x66854a), rags = M(0x5d6650);
-  const boil = M(0x8a5c9e), jawM = M(0x66854a);
-  const sac = M(0xc8e04a, { emissive: 0xa8c832, emissiveIntensity: 0.8, roughness: 0.4 });
+  const bone = M(0xd9d2c0, { roughness: 0.85 }), dark = M(0x26201e);
+  const wing = M(0x5d5548), bow = M(0x5f4a33);
 
-  // pieds nus + jambes
-  g.add(box(0.17, 0.1, 0.28, skinDark, -0.12, 0.05, 0.02));
-  g.add(box(0.17, 0.1, 0.28, skinDark, 0.12, 0.05, 0.02));
-  g.add(cyl(0.07, 0.08, 0.26, rags, -0.12, 0.25));
-  g.add(cyl(0.07, 0.08, 0.26, rags, 0.12, 0.25));
+  // jambes osseuses repliées (posture accroupie flottante)
+  g.add(cyl(0.045, 0.05, 0.24, bone, -0.1, 0.3, 0.06, 0.9, 0.15));
+  g.add(cyl(0.045, 0.05, 0.24, bone, 0.1, 0.3, 0.06, 0.9, -0.15));
+  g.add(box(0.1, 0.06, 0.16, bone, -0.12, 0.18, 0.16));
+  g.add(box(0.1, 0.06, 0.16, bone, 0.12, 0.18, 0.16));
 
-  // buste voûté en haillons + poche à venin luisante
-  const upper = new THREE.Group();
-  upper.add(cyl(0.17, 0.21, 0.4, rags, 0, 0.2));
-  upper.add(ball(0.15, sac, 0, 0.32, 0.16)); // gorge gonflée lumineuse
-  // tête aux joues gonflées + mâchoire décrochée
-  upper.add(ball(0.3, skin, 0, 0.66, 0.04, 1.2, 0.85, 1));
-  upper.add(ball(0.06, M(0xf2f2ec), -0.11, 0.72, 0.28));
-  upper.add(ball(0.06, M(0xf2f2ec), 0.11, 0.72, 0.28));
-  upper.add(box(0.2, 0.16, 0.1, jawM, 0, 0.42, 0.24, 0.35)); // mâchoire pendante
-  upper.add(box(0.16, 0.05, 0.02, M(0x26201e), 0, 0.52, 0.3)); // bouche béante
-  // pustules violettes
-  upper.add(ball(0.05, boil, -0.24, 0.78, 0.1));
-  upper.add(ball(0.04, boil, 0.2, 0.6, -0.18));
-  upper.add(ball(0.035, boil, -0.1, 0.36, 0.18));
-  // bras maigres ballants
-  upper.add(cyl(0.05, 0.06, 0.4, skin, -0.24, 0.12, 0.05, -0.25, 0.15));
-  upper.add(cyl(0.05, 0.06, 0.4, skin, 0.24, 0.12, 0.05, -0.25, -0.15));
-  upper.position.y = 0.4;
-  upper.rotation.x = 0.35; // très voûté
-  g.add(upper);
+  // colonne + cage thoracique suggérée
+  g.add(cyl(0.05, 0.06, 0.34, bone, 0, 0.56));
+  for (let i = 0; i < 3; i++) {
+    g.add(cyl(0.14 - i * 0.02, 0.14 - i * 0.02, 0.035, bone, 0, 0.52 + i * 0.09, 0, 0, 0, true));
+  }
+  g.add(box(0.26, 0.05, 0.12, bone, 0, 0.74, 0)); // clavicules/épaules
+
+  // ailes déplumées en éventail
+  for (const side of [-1, 1]) {
+    const w = new THREE.Group();
+    for (let i = 0; i < 4; i++) {
+      const f = cone(0.05, 0.5 - i * 0.07, wing, 0, 0.22 - i * 0.03, 0, 0, side * (0.5 + i * 0.4));
+      f.scale.z = 0.35;
+      w.add(f);
+    }
+    w.position.set(side * 0.16, 0.78, -0.14);
+    w.rotation.z = side * 0.5;
+    g.add(w);
+  }
+
+  // crâne grimaçant : orbites noires + rangée de dents
+  g.add(ball(0.27, bone, 0, 1.06, 0, 1, 0.92, 1));
+  g.add(ball(0.08, dark, -0.1, 1.1, 0.21));
+  g.add(ball(0.08, dark, 0.1, 1.1, 0.21));
+  g.add(box(0.22, 0.09, 0.08, bone, 0, 0.88, 0.16)); // mâchoire
+  for (let i = 0; i < 5; i++) {
+    g.add(box(0.028, 0.05, 0.02, M(0xf2efe4), -0.08 + i * 0.04, 0.9, 0.235));
+  }
+
+  // arc tenu devant à deux mains osseuses
+  const bowG = new THREE.Group();
+  const arc = new THREE.Mesh(
+    new THREE.TorusGeometry(0.3, 0.025, 6, 14, Math.PI),
+    bow
+  );
+  bowG.add(arc);
+  bowG.add(cyl(0.006, 0.006, 0.6, M(0xd9d2c0), 0, 0, 0, 0, Math.PI / 2)); // corde... verticale
+  bowG.position.set(0.02, 0.62, 0.3);
+  bowG.rotation.set(0, Math.PI / 2, Math.PI / 2);
+  g.add(bowG);
+  g.add(cyl(0.04, 0.045, 0.3, bone, -0.18, 0.62, 0.16, -0.9, 0.3)); // bras vers l'arc
+  g.add(cyl(0.04, 0.045, 0.3, bone, 0.18, 0.62, 0.16, -0.9, -0.3));
   return g;
 }
 
