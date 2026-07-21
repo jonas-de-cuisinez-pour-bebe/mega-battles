@@ -24,6 +24,8 @@ Design source : doc « Mega Battles » + mock-ups juillet 2013 (Design/).
 
 ## Jouer en ligne
 
-https://mega-battles.cellar-c2.services.clever-cloud.com/
+https://mega-battles.cellar-c2.services.clever-cloud.com/index.html
+
+(le `/index.html` est obligatoire : Cellar ne sert pas d'index à la racine du bucket)
 
 Redéploiement : `./deploy.sh` (build + sync vers le bucket Cellar).

@@ -16,4 +16,4 @@ export AWS_RESPONSE_CHECKSUM_VALIDATION=when_required
 
 npm run build
 aws s3 sync dist/ "s3://$BUCKET/" --acl public-read --delete --endpoint-url "$ENDPOINT"
-echo "✔ En ligne : https://$BUCKET.cellar-c2.services.clever-cloud.com/"
+echo "✔ En ligne : https://$BUCKET.cellar-c2.services.clever-cloud.com/index.html"
