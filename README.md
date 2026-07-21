@@ -18,6 +18,6 @@ npm run dev
 - [x] Phase 3 — artwork gpt-image-1 pour l'UI (portraits, setup, VS, victoire) + personnages
   en modèles 3D procéduraux chibi sur le plateau (src/models.js)
   (18 variantes générées pour 3,01 $, planche contact : /planche.html ; script : assets-raw/gen_assets.py)
-- [ ] Phase 4 — polish + équilibrage
+- [x] Phase 4 — polish (idle, impacts/particules, survol de la file) + équilibrage rapide (HP -25 %)
 
 Design source : doc « Mega Battles » + mock-ups juillet 2013 (Design/).

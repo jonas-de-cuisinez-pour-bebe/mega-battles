@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { SPAWNS, AURA_REDUCTION, SKILL_COOLDOWN } from './data.js';
+import { SPAWNS, AURA_REDUCTION, SKILL_COOLDOWN, TEAMS } from './data.js';
 import { Board } from './board.js';
 import { Unit, Queue } from './units.js';
 import { initUI } from './ui.js';
@@ -112,6 +112,27 @@ const ui = initUI({
     refresh();
   },
   onEnd: () => { if (!inputLocked()) endTurn(); },
+  // Survol d'un jeton de la file : repère le personnage sur le plateau
+  onChipHover: (u, e) => {
+    if (game.over || !game.started) return;
+    if (u) {
+      setCursorCell(u.x, u.z);
+      ui.tooltip(
+        `<b style="color:${TEAMS[u.team].css}">${TEAMS[u.team].label} · ${u.cls.name}</b><br>` +
+        `${u.hp}/${u.maxHp} HP`,
+        e.clientX, e.clientY
+      );
+      // petit bond pour le repérer d'un coup d'œil
+      if (!game.busy && !u.pinging) {
+        u.pinging = true;
+        tween(280, k => { u.mesh.position.y = 0.1 + 0.28 * Math.sin(Math.PI * k); })
+          .then(() => { u.pinging = false; u.mesh.position.y = 0.1; });
+      }
+    } else {
+      setCursorCell(null);
+      ui.tooltip(null);
+    }
+  },
 });
 
 async function startTurn() {
@@ -163,6 +184,59 @@ function nearestEnemy(u) {
     if (d < bd) { bd = d; best = t; }
   }
   return best;
+}
+
+// Éclats de particules à l'impact
+function spawnImpact(pos, color = 0xffe08a) {
+  const parts = [];
+  for (let i = 0; i < 8; i++) {
+    const p = new THREE.Mesh(
+      new THREE.SphereGeometry(0.05, 6, 6),
+      new THREE.MeshBasicMaterial({ color, transparent: true })
+    );
+    p.position.copy(pos);
+    p.userData.o = pos.clone();
+    p.userData.v = new THREE.Vector3(
+      (Math.random() - 0.5) * 2.4, Math.random() * 2.4 + 0.8, (Math.random() - 0.5) * 2.4
+    );
+    scene.add(p);
+    parts.push(p);
+  }
+  const T = 0.45;
+  tween(450, k => {
+    const t = k * T;
+    for (const p of parts) {
+      p.position.set(
+        p.userData.o.x + p.userData.v.x * t,
+        p.userData.o.y + p.userData.v.y * t - 4.5 * t * t,
+        p.userData.o.z + p.userData.v.z * t
+      );
+      p.material.opacity = 1 - k;
+      p.scale.setScalar(1 - k * 0.6);
+    }
+  }).then(() => parts.forEach(p => { scene.remove(p); p.geometry.dispose(); p.material.dispose(); }));
+}
+
+// Anneau au sol quand un skill se déclenche
+function spawnRing(pos, color = 0xffd34a) {
+  const r = new THREE.Mesh(
+    new THREE.RingGeometry(0.3, 0.42, 24),
+    new THREE.MeshBasicMaterial({ color, transparent: true, side: THREE.DoubleSide })
+  );
+  r.rotation.x = -Math.PI / 2;
+  r.position.set(pos.x, 0.14, pos.z);
+  scene.add(r);
+  tween(350, k => { r.scale.setScalar(1 + k * 1.6); r.material.opacity = 1 - k; })
+    .then(() => { scene.remove(r); r.geometry.dispose(); r.material.dispose(); });
+}
+
+// Secousse de la cible à l'impact
+function shake(t) {
+  tween(260, k => {
+    const a = (1 - k) * 0.07;
+    t.model.position.x = (Math.random() * 2 - 1) * a;
+    t.model.position.z = (Math.random() * 2 - 1) * a;
+  }).then(() => { t.model.position.x = 0; t.model.position.z = 0; });
 }
 
 // Tourne le modèle d'une unité vers une case (arc le plus court)
@@ -242,28 +316,57 @@ async function doAttack(target) {
   await faceTween(u, target.x, target.z, 120);
   faceTween(target, u.x, u.z, 160);
 
-  // Animation : lunge en mêlée, projectile pour l'archer
+  // Animation : recul + charge étirée en mêlée, tir en cloche pour l'archer
   const origin = u.mesh.position.clone();
   const targetPos = board.worldPos(target.x, target.z, 0.1);
+  if (wasArmed) spawnRing(origin); // éclat au sol quand le skill part
+
   if (u.cls.key === 'archer') {
+    // le buste bascule en arrière pendant la visée…
+    await tween(130, k => { u.model.rotation.x = -0.3 * Math.sin(Math.PI * k); });
+    // …puis le projectile part en cloche
     const proj = new THREE.Mesh(
       new THREE.SphereGeometry(0.09, 8, 8),
       new THREE.MeshBasicMaterial({ color: 0xffe08a })
     );
-    proj.position.copy(origin).setY(0.9);
     scene.add(proj);
+    const from = origin.clone().setY(1.0);
     const dest = targetPos.clone().setY(0.9);
-    await tween(280, k => proj.position.lerpVectors(origin.clone().setY(0.9), dest, k));
+    await tween(300, k => {
+      proj.position.lerpVectors(from, dest, k);
+      proj.position.y += Math.sin(Math.PI * k) * 0.9;
+    });
     scene.remove(proj);
   } else {
-    const lungeTo = origin.clone().lerp(targetPos, 0.35);
-    await tween(140, k => u.mesh.position.lerpVectors(origin, lungeTo, k));
-    await tween(140, k => u.mesh.position.lerpVectors(lungeTo, origin, k));
+    // recul-armé (écrasement) puis charge (étirement)
+    const back = origin.clone().lerp(targetPos, -0.12);
+    const hit = origin.clone().lerp(targetPos, 0.45);
+    await tween(100, k => {
+      u.mesh.position.lerpVectors(origin, back, k);
+      u.squash = 1 - 0.09 * k;
+    });
+    await tween(110, k => {
+      u.mesh.position.lerpVectors(back, hit, k);
+      u.squash = 0.91 + 0.17 * k;
+    });
   }
 
+  // Impact : particules, secousse de la cible, dégâts flottants
+  spawnImpact(targetPos.clone().setY(0.8), target.team === 'zombies' ? 0x9fcf4a : 0xff8a5c);
+  shake(target);
   target.setHP(target.hp - dmg);
   const s = toScreen(board.worldPos(target.x, target.z, 1.2));
   ui.floatDamage(s.x, s.y, `-${dmg}`);
+
+  if (u.cls.key !== 'archer') {
+    // retour en position avec détente
+    const hit = origin.clone().lerp(targetPos, 0.45);
+    await tween(150, k => {
+      u.mesh.position.lerpVectors(hit, origin, k);
+      u.squash = 1.08 - 0.08 * k;
+    });
+    u.squash = 1;
+  }
 
   if (!target.alive) {
     sfx.death(target);
@@ -282,6 +385,7 @@ async function doAttack(target) {
   if (winner) {
     game.over = true;
     board.clearHighlights();
+    ui.renderQueue(queue.ordered(), null); // purge le dernier mort de la file affichée
     ui.showVictory(winner);
     return;
   }
@@ -413,6 +517,7 @@ addEventListener('resize', () => {
 });
 
 const clock = new THREE.Clock();
+let idleT = 0;
 renderer.setAnimationLoop(() => {
   const dt = clock.getDelta() * 1000;
   for (let i = anims.length - 1; i >= 0; i--) {
@@ -423,6 +528,14 @@ renderer.setAnimationLoop(() => {
     if (k >= 1) { anims.splice(i, 1); a.res(); }
   }
   ring.rotation.z += 0.02;
+  // idle : les figurines respirent (humains) ou tanguent (zombies)
+  idleT += dt / 1000;
+  for (const u of units) {
+    if (!u.alive) continue;
+    const z = u.team === 'zombies';
+    u.model.scale.y = u.squash * (1 + (z ? 0.02 : 0.014) * Math.sin(idleT * (z ? 1.8 : 2.4) + u.id * 1.7));
+    u.model.rotation.z = (z ? 0.05 : 0.014) * Math.sin(idleT * (z ? 1.1 : 1.5) + u.id * 2.3);
+  }
   if (game.busy || game.over || !game.started) cursor.visible = false;
   controls.update();
   renderer.render(scene, camera);

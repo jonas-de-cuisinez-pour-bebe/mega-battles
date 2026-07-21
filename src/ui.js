@@ -66,8 +66,10 @@ const CSS = `
   width: 42px; height: 42px; border-radius: 50%; display: flex;
   align-items: center; justify-content: center; color: #fff;
   font: 700 11px system-ui; border: 2px solid rgba(0,0,0,0.4);
-  flex: 0 0 auto;
+  flex: 0 0 auto; pointer-events: auto; cursor: pointer;
+  transition: transform 0.12s;
 }
+.mb-chip:hover { transform: scale(1.18); border-color: #fff; }
 .mb-chip.active { outline: 3px dashed #fff; outline-offset: 2px; width: 48px; height: 48px; }
 
 /* Dégâts flottants */
@@ -196,6 +198,8 @@ export function initUI(handlers) {
         const chip = el('div', 'mb-chip' + (u === active ? ' active' : ''));
         chip.style.background = TEAMS[u.team].css;
         chip.textContent = u.cls.abbr;
+        chip.addEventListener('mouseenter', (e) => handlers.onChipHover?.(u, e));
+        chip.addEventListener('mouseleave', () => handlers.onChipHover?.(null));
         queue.appendChild(chip);
       }
     },

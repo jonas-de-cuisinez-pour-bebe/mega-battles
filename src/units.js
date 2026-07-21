@@ -18,6 +18,7 @@ export class Unit {
     this.z = z;
     this.cooldown = 0;  // tours restants avant que le skill actif soit rechargé
     this.armed = false; // skill actif enclenché pour la prochaine attaque
+    this.squash = 1;    // écrasement/étirement piloté par les animations d'attaque
     this.mesh = this.#buildMesh();
     this.#buildHpBar();
   }
